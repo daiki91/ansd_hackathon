@@ -1,0 +1,536 @@
+\documentclass[11pt,a4paper]{article}
+
+% ---------- Encoding & language ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ---------- Layout ----------
+\usepackage[top=2.5cm,bottom=2.5cm,left=2.3cm,right=2.3cm]{geometry}
+\usepackage{setspace}
+\setstretch{1.12}
+\usepackage{parskip}
+\setlength{\parskip}{0.55em}
+\setlength{\parindent}{0pt}
+
+% ---------- Colors ----------
+\usepackage{xcolor}
+\definecolor{navy}{HTML}{1B3358}
+\definecolor{teal}{HTML}{0E7C7B}
+\definecolor{gold}{HTML}{C9962C}
+\definecolor{grey}{HTML}{5B6472}
+\definecolor{lightbg}{HTML}{EEF2F6}
+\definecolor{lightbg2}{HTML}{F5F1E6}
+
+% ---------- Headings ----------
+\usepackage{titlesec}
+\titleformat{\section}
+  {\Large\bfseries\color{navy}}{\thesection.}{0.5em}{}
+\titlespacing*{\section}{0pt}{1.6em}{0.8em}
+\titleformat{name=\section}[block]
+  {\Large\bfseries\color{navy}}{\thesection.}{0.5em}{}[{\color{navy}\titlerule[0.6pt]}]
+
+\titleformat{\subsection}
+  {\large\bfseries\color{teal}}{\thesubsection}{0.5em}{}
+\titlespacing*{\subsection}{0pt}{1.2em}{0.5em}
+
+\titleformat{\subsubsection}
+  {\bfseries\color{gold}}{\thesubsubsection}{0.5em}{}
+\titlespacing*{\subsubsection}{0pt}{1em}{0.4em}
+
+% ---------- Lists ----------
+\usepackage{enumitem}
+\setlist[itemize,1]{label=\textcolor{navy}{\textbullet}, leftmargin=1.3em, itemsep=0.25em, topsep=0.3em}
+\setlist[itemize,2]{label=\textcolor{teal}{\textendash}, leftmargin=2.4em, itemsep=0.15em}
+
+% ---------- Tables ----------
+\usepackage{tabularx}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{longtable}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+% ---------- Quote box ----------
+\usepackage[most]{tcolorbox}
+\newtcolorbox{quotebox}{
+  colback=lightbg, colframe=gold, boxrule=0pt, leftrule=2.5pt,
+  arc=0pt, outer arc=0pt, left=10pt, right=10pt, top=6pt, bottom=6pt,
+  fontupper=\itshape\color{navy}
+}
+
+% ---------- Header / Footer ----------
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[R]{\small\color{grey}DATA LINK --- Cahier des charges}
+\fancyfoot[C]{\small\color{grey}Page \thepage\ / \pageref{LastPage}}
+
+% ---------- Hyperlinks / TOC ----------
+\usepackage[colorlinks=true,linkcolor=navy,urlcolor=teal,citecolor=navy]{hyperref}
+\usepackage{xurl}
+\usepackage{tocloft}
+\renewcommand{\cftsecfont}{\color{navy}}
+\renewcommand{\cftsecpagefont}{\color{navy}}
+\setcounter{tocdepth}{1}
+
+\newcommand{\arrowto}{$\rightarrow$}
+\newcommand{\priE}{\textcolor{navy}{\bfseries Essentielle}}
+\newcommand{\priI}{\textcolor{teal}{\bfseries Importante}}
+\newcommand{\priS}{\textcolor{gold}{\bfseries Souhaitable}}
+\newcommand{\crit}[1]{\par\smallskip{\small\itshape Critère d'acceptation~: #1}}
+
+\begin{document}
+
+% =====================================================================
+% COVER PAGE
+% =====================================================================
+\begin{titlepage}
+\centering
+\vspace*{3.5cm}
+
+{\color{grey}\large\bfseries \fontsize{13}{15}\selectfont C\,A\,H\,I\,E\,R\;\; D\,E\,S\;\; C\,H\,A\,R\,G\,E\,S}
+
+\vspace{0.8cm}
+{\color{navy}\fontsize{48}{52}\selectfont\bfseries DATA LINK}
+
+\vspace{0.7cm}
+{\color{teal}\Large\bfseries Plateforme intelligente de visualisation, d'analyse,\\ de croisement et de valorisation des données statistiques du Sénégal}
+
+\vspace{0.9cm}
+{\color{gold}\itshape\large « Connecter les données pour révéler l'information. »}
+
+\vspace{3cm}
+{\color{grey} Basée sur les jeux de données ouvertes de l'ANSD\\ (Agence Nationale de la Statistique et de la Démographie)}
+
+\vspace{3cm}
+{\bfseries Version 1.0}\\
+Août 2026
+
+\end{titlepage}
+
+% =====================================================================
+% TOC
+% =====================================================================
+\tableofcontents
+\newpage
+
+% =====================================================================
+% 1. CONTEXTE
+% =====================================================================
+\section{Contexte et justification}
+
+Le Sénégal, à travers l'Agence Nationale de la Statistique et de la Démographie (ANSD), produit et diffuse un volume important de données statistiques couvrant l'économie, l'emploi, la population, l'agriculture, l'éducation, la santé et bien d'autres domaines. Ces données sont aujourd'hui disponibles sur plusieurs plateformes (portails Open Data, Open Data for Africa, publications officielles), mais restent difficiles d'accès et de compréhension pour une grande partie des utilisateurs potentiels~: citoyens, étudiants, chercheurs, entreprises, journalistes, administrations et startups.
+
+Le constat de départ est simple~: les données statistiques existent en quantité importante, mais leur valeur reste souvent limitée lorsqu'elles sont consultées séparément, dans des formats peu exploitables, sans mise en contexte ni possibilité de croisement entre elles.
+
+\begin{quotebox}
+Le projet propose de passer de la logique « je consulte une donnée » à la logique « je connecte plusieurs données pour produire une nouvelle information ».
+\end{quotebox}
+
+C'est dans ce contexte que s'inscrit le projet DATA LINK~: une plateforme numérique intelligente qui ne se contente pas d'afficher des statistiques, mais qui permet de les rechercher, de les comprendre, de les visualiser, de les croiser et de les réutiliser pour produire de nouveaux indicateurs et de nouvelles analyses utiles à la compréhension des réalités socio-économiques du Sénégal.
+
+% =====================================================================
+% 2. PRESENTATION
+% =====================================================================
+\section{Présentation du projet}
+
+\subsection{Nom et positionnement}
+
+\textbf{Nom du projet~: DATA LINK}
+
+\textit{Slogan~: « Connecter les données pour révéler l'information. »}
+
+DATA LINK se positionne comme une couche intelligente de croisement et de valorisation des données statistiques, et non comme un simple outil de consultation. Le projet n'est donc~:
+
+\begin{itemize}
+  \item ni un simple tableau de bord (dashboard)~;
+  \item ni un simple moteur de recherche~;
+  \item ni une base de données de plus~;
+  \item ni un chatbot d'intelligence artificielle isolé.
+\end{itemize}
+
+Il s'agit avant tout d'une plateforme de croisement et de valorisation des données statistiques, permettant de transformer plusieurs sources de données isolées en informations, indicateurs et analyses exploitables --- tout en offrant, en complément, des tableaux de bord, une cartographie interactive, un moteur de recherche en langage naturel et un assistant IA explicatif.
+
+\subsection{Objectif général}
+
+Développer une plateforme numérique fluide et sécurisée permettant à différents profils d'utilisateurs de rechercher, comprendre, visualiser, analyser, croiser et réutiliser les données statistiques de l'ANSD, afin de faire émerger de nouveaux indicateurs, relations et informations utiles à la compréhension des réalités socio-économiques et territoriales du Sénégal.
+
+\subsection{Objectifs spécifiques}
+
+\begin{itemize}
+  \item Centraliser et référencer les différents jeux de données disponibles sur les plateformes de l'ANSD dans un catalogue structuré~;
+  \item Faciliter la recherche et l'exploration des données via un moteur de recherche intelligent en langage naturel~;
+  \item Proposer des tableaux de bord dynamiques par domaine (économie, emploi, population, agriculture, éducation, santé...)~;
+  \item Offrir une cartographie interactive du Sénégal (région, département, commune)~;
+  \item Identifier automatiquement les variables et dimensions communes entre plusieurs jeux de données~;
+  \item Automatiser le nettoyage, l'harmonisation et le croisement des données selon des dimensions communes (région, année, sexe, âge, secteur...)~;
+  \item Générer de nouveaux indicateurs à partir des données croisées et les représenter par des visualisations adaptées~;
+  \item Faciliter l'interprétation des résultats, y compris via un assistant IA capable d'expliquer une statistique en langage simple~;
+  \item Permettre la comparaison d'indicateurs entre régions et périodes, et l'exportation des analyses (PDF, Excel, CSV, JSON)~;
+  \item Exposer une API pour les développeurs et startups, avec interopérabilité SDMX~;
+  \item Encourager la réutilisation des données ouvertes de l'ANSD et le développement de l'écosystème Data au Sénégal.
+\end{itemize}
+
+% =====================================================================
+% 3. PROFILS UTILISATEURS
+% =====================================================================
+\section{Profils utilisateurs et besoins}
+
+La plateforme est conçue pour répondre aux besoins de profils variés, chacun avec des usages spécifiques~:
+
+\rowcolors{2}{white}{lightbg}
+\begin{longtable}{@{}>{\bfseries}p{4.2cm} p{10.3cm}@{}}
+\rowcolor{navy}
+\textcolor{white}{Profil} & \textcolor{white}{Besoins principaux} \\
+\endhead
+Citoyens & Comprendre les statistiques du pays de façon simple et accessible \\
+Étudiants / chercheurs & Explorer, croiser et exporter des données pour des travaux académiques \\
+Entreprises / startups & Indicateurs économiques et sociaux pour la prise de décision, accès API \\
+Journalistes & Rechercher rapidement des chiffres fiables, générer des visualisations et rapports \\
+Administrations / collectivités & Suivi territorial, comparaison régionale, aide à la décision publique \\
+Développeurs & Réutiliser les données via une API documentée, interopérable SDMX \\
+\end{longtable}
+
+% =====================================================================
+% 4. PERIMETRE FONCTIONNEL
+% =====================================================================
+\section{Périmètre fonctionnel}
+
+\subsection{Exigences fonctionnelles}
+
+Chaque exigence fonctionnelle (RF) est identifiée par un code unique, assortie d'une priorité MoSCoW (\priE~: indispensable au prototype minimal viable~; \priI~: attendue mais non bloquante~; \priS~: envisageable selon le temps disponible) et d'un critère d'acceptation vérifiable.
+
+\subsubsection{Gestion des profils et de l'accès}
+
+\rowcolors{2}{white}{lightbg}
+\begin{longtable}{@{}>{\bfseries}p{1.5cm} p{10.0cm} p{2.4cm}@{}}
+\rowcolor{navy}
+\textcolor{white}{ID} & \textcolor{white}{Exigence} & \textcolor{white}{Priorité} \\
+\endhead
+RF-01 & Gérer des profils utilisateurs différenciés~: citoyen, étudiant/chercheur, entreprise/startup, journaliste, administration, développeur. \crit{chaque profil accède à une interface adaptée à ses besoins~; l'accès aux fonctionnalités avancées (API, exports en masse) est réservé aux profils habilités.} & \priI \\
+\end{longtable}
+
+\subsubsection{Visualisation et exploration}
+
+\rowcolors{2}{white}{lightbg}
+\begin{longtable}{@{}>{\bfseries}p{1.5cm} p{10.0cm} p{2.4cm}@{}}
+\rowcolor{navy}
+\textcolor{white}{ID} & \textcolor{white}{Exigence} & \textcolor{white}{Priorité} \\
+\endhead
+RF-02 & Proposer des tableaux de bord dynamiques par domaine~: économie, emploi, population, agriculture, éducation, santé, etc. \crit{chaque domaine dispose d'un tableau de bord présentant au moins 5 indicateurs clés, actualisés automatiquement à chaque mise à jour des données sources.} & \priE \\
+RF-03 & Offrir une cartographie interactive du Sénégal avec visualisation des indicateurs par région, département et commune. \crit{l'utilisateur peut sélectionner un indicateur et le visualiser aux trois niveaux de granularité territoriale, avec légende et info-bulle au survol.} & \priE \\
+RF-04 & Générer automatiquement des visualisations adaptées~: graphiques, courbes, histogrammes, cartes thermiques, évolutions temporelles. \crit{pour tout indicateur ou jeu de données consulté, au moins une visualisation est produite sans configuration manuelle de l'utilisateur.} & \priE \\
+RF-05 & Choisir automatiquement le type de représentation le plus pertinent selon la nature des données (temporelle, catégorielle, géographique...). \crit{une règle de décision documentée (type de donnée \arrowto\ type de graphique) est appliquée et vérifiable sur au moins 3 cas de test.} & \priI \\
+\end{longtable}
+
+\subsubsection{Recherche et intelligence artificielle}
+
+\rowcolors{2}{white}{lightbg}
+\begin{longtable}{@{}>{\bfseries}p{1.5cm} p{10.0cm} p{2.4cm}@{}}
+\rowcolor{navy}
+\textcolor{white}{ID} & \textcolor{white}{Exigence} & \textcolor{white}{Priorité} \\
+\endhead
+RF-06 & Fournir un moteur de recherche intelligent permettant de rechercher un indicateur en langage naturel. \crit{une requête libre (ex.~« taux de chômage à Dakar en 2023 ») retourne les indicateurs et jeux de données correspondants, classés par pertinence, en moins de 3 secondes.} & \priE \\
+RF-07 & Proposer un assistant IA capable d'expliquer simplement une statistique (« Que signifie cet indicateur~? », « Quelle région a le taux le plus élevé~? »). \crit{pour un indicateur affiché, l'assistant répond en langage simple à partir des données réelles de la plateforme, sans inventer de chiffres.} & \priE \\
+RF-08 & Proposer un système de recommandation d'indicateurs ou de jeux de données pertinents selon la recherche ou la navigation de l'utilisateur. \crit{au moins 3 suggestions pertinentes sont affichées à partir d'une recherche ou d'un jeu de données consulté.} & \priS \\
+\end{longtable}
+
+\subsubsection{Analyse et production de contenus}
+
+\rowcolors{2}{white}{lightbg}
+\begin{longtable}{@{}>{\bfseries}p{1.5cm} p{10.0cm} p{2.4cm}@{}}
+\rowcolor{navy}
+\textcolor{white}{ID} & \textcolor{white}{Exigence} & \textcolor{white}{Priorité} \\
+\endhead
+RF-09 & Permettre la comparaison d'un indicateur entre plusieurs régions. \crit{l'utilisateur sélectionne au moins 2 régions et un indicateur commun, et obtient une comparaison visuelle et chiffrée.} & \priE \\
+RF-10 & Permettre la comparaison d'un indicateur entre plusieurs périodes. \crit{l'utilisateur sélectionne une plage temporelle et visualise l'évolution de l'indicateur sur cette période.} & \priE \\
+RF-11 & Générer automatiquement des rapports exportables aux formats PDF et Excel. \crit{un tableau de bord ou une analyse peut être exporté en un clic, avec graphiques, données chiffrées et sources citées.} & \priE \\
+RF-12 & Générer des rapports statistiques territoriaux personnalisés (région + thèmes sélectionnés). \crit{l'utilisateur compose un rapport en choisissant une zone géographique et un ou plusieurs thèmes, puis l'exporte.} & \priS \\
+RF-13 & Mettre à disposition des indicateurs économiques et sociaux dynamiques pour aider entreprises et décideurs à la prise de décision. \crit{un espace dédié présente les indicateurs les plus utilisés pour la décision (emploi, pouvoir d'achat, production...), actualisés automatiquement.} & \priI \\
+\end{longtable}
+
+\subsubsection{Ouverture des données et interopérabilité}
+
+\rowcolors{2}{white}{lightbg}
+\begin{longtable}{@{}>{\bfseries}p{1.5cm} p{10.0cm} p{2.4cm}@{}}
+\rowcolor{navy}
+\textcolor{white}{ID} & \textcolor{white}{Exigence} & \textcolor{white}{Priorité} \\
+\endhead
+RF-14 & Permettre le téléchargement Open Data des jeux de données dans plusieurs formats (CSV, Excel, JSON). \crit{chaque jeu de données du catalogue est téléchargeable dans au moins ces trois formats, sans authentification pour les données publiques.} & \priE \\
+RF-15 & Exposer une API publique permettant aux développeurs et startups de réutiliser les données et indicateurs. \crit{une API REST authentifiée par clé API expose les jeux de données et indicateurs, avec réponses au format JSON.} & \priE \\
+RF-16 & Assurer l'interopérabilité SDMX pour faciliter les échanges avec d'autres plateformes statistiques. \crit{au moins un jeu de données de référence est exportable/consultable au format SDMX.} & \priI \\
+RF-17 & Fournir un espace développeurs avec documentation complète de l'API. \crit{une documentation interactive (type OpenAPI/Swagger) décrit les endpoints, paramètres, formats de réponse et exemples d'appel.} & \priE \\
+\end{longtable}
+
+\subsection{Moteur de croisement de données --- cœur différenciant du projet}
+
+Le cœur de DATA LINK est un moteur de croisement de données qui permet de dépasser la simple consultation pour produire de nouvelles informations.
+
+\subsubsection{a) Catalogue des données}
+Chaque jeu de données référencé présente~: titre, description, source, période couverte, variables disponibles, niveau géographique, format, métadonnées, et une liste des jeux de données avec lesquels il peut être croisé. Exemple~:
+
+\begin{quotebox}
+Établissements de santé --- dimensions disponibles~: Région, Département, Type d'établissement, Année. Jeux de données compatibles suggérés~: Population, Démographie, Pauvreté, Ménages.
+\end{quotebox}
+
+\subsubsection{b) Moteur de croisement}
+L'utilisateur sélectionne plusieurs jeux de données~; la plateforme identifie automatiquement les dimensions communes (par exemple la région) et réalise le croisement~: jointures, agrégations, ratios, taux, évolutions temporelles, comparaisons territoriales, classements, corrélations lorsque pertinentes.
+
+\subsubsection{c) Génération d'indicateurs}
+Les données brutes croisées sont transformées en indicateurs interprétables, par exemple~:
+\begin{itemize}
+  \item Population + établissements de santé \arrowto\ population moyenne par établissement~;
+  \item Production agricole + importations \arrowto\ comparaison production nationale / dépendance aux importations~;
+  \item Population scolaire + établissements scolaires \arrowto\ pression démographique sur les infrastructures éducatives~;
+  \item Emploi + niveau d'éducation \arrowto\ analyse de la situation professionnelle selon le niveau d'instruction.
+\end{itemize}
+
+\subsubsection{d) Visualisation automatique}
+Les résultats sont représentés automatiquement sous la forme la plus pertinente~: graphiques, tableaux, cartes interactives, classements, indicateurs clés, séries temporelles.
+
+\subsubsection{e) Interprétation assistée}
+Une couche d'aide à l'interprétation explique les résultats en langage simple. Exemple~:
+
+\begin{quotebox}
+Résultat~: la région X possède le ratio population/établissement de santé le plus élevé parmi les régions étudiées. Interprétation~: en moyenne, chaque établissement de santé de cette région dessert une population plus importante que dans les autres régions comparées.
+\end{quotebox}
+
+Cette fonctionnalité pourra être renforcée par l'intelligence artificielle, les données et calculs restant la source principale de vérité --- l'IA explique et assiste, elle ne remplace pas le moteur statistique.
+
+\subsubsection{f) Exigences fonctionnelles du moteur de croisement}
+
+\rowcolors{2}{white}{lightbg}
+\begin{longtable}{@{}>{\bfseries}p{1.5cm} p{10.0cm} p{2.4cm}@{}}
+\rowcolor{navy}
+\textcolor{white}{ID} & \textcolor{white}{Exigence} & \textcolor{white}{Priorité} \\
+\endhead
+RF-18 & Permettre la sélection de plusieurs jeux de données et détecter automatiquement leurs dimensions communes (région, année, sexe, âge, secteur...). \crit{pour 2 jeux de données partageant au moins une dimension, le système propose automatiquement cette dimension comme clé de croisement.} & \priE \\
+RF-19 & Réaliser le croisement des données sélectionnées~: jointures, agrégations, ratios, taux, évolutions temporelles, comparaisons territoriales, classements, corrélations lorsque pertinentes. \crit{le croisement de deux jeux de données de référence (ex.~santé et population) produit un résultat exploitable sans intervention technique de l'utilisateur.} & \priE \\
+RF-20 & Générer de nouveaux indicateurs interprétables à partir des données croisées (ex.~population moyenne par établissement de santé). \crit{au moins les 4 cas d'usage de démonstration du projet (section~10) produisent un indicateur calculé et documenté.} & \priE \\
+RF-21 & Fournir une interprétation assistée des résultats en langage simple. \crit{chaque indicateur généré est accompagné d'une phrase d'interprétation lisible par un non-spécialiste.} & \priI \\
+\end{longtable}
+
+% =====================================================================
+% 5. METHODOLOGIE
+% =====================================================================
+\section{Méthodologie de travail}
+
+La plateforme est conçue de manière modulaire, en plusieurs couches successives~: ingestion des données, catalogue, moteur de croisement, génération d'indicateurs, visualisation, interprétation, puis restitution via les interfaces (tableaux de bord, cartographie, rapports, API).
+
+\subsection{Flux de traitement des données}
+
+\rowcolors{2}{white}{lightbg}
+\begin{longtable}{@{}>{\bfseries}p{4.6cm} p{9.9cm}@{}}
+\rowcolor{navy}
+\textcolor{white}{Étape} & \textcolor{white}{Description} \\
+\endhead
+1. Sources ANSD & API, CSV, Excel, SDMX, données Open Data et données géographiques \\
+2. Ingestion (Data Ingestion) & Récupération automatisée et planifiée des données depuis les sources \\
+3. Traitement (Data Processing) & Nettoyage, transformation, harmonisation avec Pandas / NumPy \\
+4. Stockage & Base de données Supabase (PostgreSQL) avec extension PostGIS pour les données géographiques \\
+5. Moteur DATA LINK & Détection des dimensions communes, croisement, calcul des indicateurs \\
+6. Restitution & API (FastAPI) consommée par le frontend React (dashboards, cartes, rapports) \\
+\end{longtable}
+
+\subsection{Actualisation des données}
+
+Un système d'actualisation permet de récupérer périodiquement les nouvelles données, de vérifier leur structure, de détecter les changements, d'effectuer les transformations nécessaires, de mettre à jour la base de données et de recalculer automatiquement les indicateurs concernés.
+
+% =====================================================================
+% 6. ARCHITECTURE TECHNIQUE
+% =====================================================================
+\section{Architecture technique et exigences non fonctionnelles}
+
+\subsection{Stack technologique retenue}
+
+\rowcolors{2}{white}{lightbg}
+\begin{longtable}{@{}>{\bfseries}p{3.6cm} p{10.9cm}@{}}
+\rowcolor{navy}
+\textcolor{white}{Couche} & \textcolor{white}{Technologies} \\
+\endhead
+Frontend & React.js (Vite), Tailwind CSS, Chart.js / Recharts, Leaflet ou MapLibre (cartographie interactive) \\
+Backend / API & Python (FastAPI) pour l'ensemble des services --- traitement de données en Python (Pandas, NumPy), validation des schémas avec Pydantic \\
+Base de données & Supabase (PostgreSQL managé) avec extension PostGIS pour les données géographiques~; authentification et stockage de fichiers intégrés \\
+Intelligence artificielle & Couche IA pour la recherche en langage naturel, l'explication des indicateurs, la suggestion de croisements et la génération de résumés \\
+Interopérabilité & Standard SDMX pour l'échange de données statistiques~; API REST documentée \\
+Déploiement / Hébergement & Render (backend FastAPI, base PostgreSQL/Supabase, frontend React) --- conteneurisation Docker pour le prototype \\
+Gestion de projet & Git / GitHub, documentation technique, travail collaboratif par branches \\
+\end{longtable}
+
+Le choix de Supabase répond à deux besoins exprimés pour ce projet~: disposer d'une base PostgreSQL robuste (avec l'extension PostGIS pour les analyses et cartes géographiques), tout en bénéficiant nativement de l'authentification des utilisateurs, du stockage de fichiers et d'une API auto-générée --- ce qui accélère le développement et simplifie le déploiement sur Render.
+
+\subsection{Schéma d'architecture}
+
+\begin{quotebox}
+\normalfont\itshape Sources ANSD (API / CSV / SDMX) \arrowto\ Ingestion des données \arrowto\ Traitement (Pandas) \arrowto\ Base Supabase (PostgreSQL + PostGIS) \arrowto\ Moteur DATA LINK (croisement, indicateurs) \arrowto\ Backend API (FastAPI) \arrowto\ Frontend React (dashboards, cartes, rapports) \arrowto\ Utilisateur final.
+\end{quotebox}
+
+\subsection{Exigences non fonctionnelles}
+
+Comme pour les exigences fonctionnelles, chaque exigence non fonctionnelle (RNF) est identifiée, priorisée (\priE\ / \priI\ / \priS) et assortie d'un critère d'acceptation vérifiable.
+
+\subsubsection{Sécurité}
+
+\rowcolors{2}{white}{lightbg}
+\begin{longtable}{@{}>{\bfseries}p{1.7cm} p{10.0cm} p{2.2cm}@{}}
+\rowcolor{navy}
+\textcolor{white}{ID} & \textcolor{white}{Exigence} & \textcolor{white}{Priorité} \\
+\endhead
+RNF-01 & Authentifier les utilisateurs et gérer des rôles distincts (citoyen, chercheur, entreprise, administrateur, développeur). \crit{l'accès aux fonctionnalités sensibles (API, exports en masse, back-office) est refusé à tout utilisateur non authentifié ou non habilité.} & \priE \\
+RNF-02 & Chiffrer les données en transit (HTTPS/TLS) et au repos. \crit{toute communication avec la plateforme s'effectue en HTTPS~; les données sensibles en base sont chiffrées au repos.} & \priE \\
+RNF-03 & Protéger les accès à l'API par clés API, quotas et limitation de débit. \crit{une clé API invalide ou un quota dépassé entraîne un rejet de la requête avec un code d'erreur explicite (401/429).} & \priE \\
+RNF-04 & Journaliser les accès et se conformer aux bonnes pratiques de protection des données personnelles. \crit{les accès aux données et à l'API sont journalisés et consultables à des fins d'audit.} & \priI \\
+\end{longtable}
+
+\subsubsection{Performance et fluidité}
+
+\rowcolors{2}{white}{lightbg}
+\begin{longtable}{@{}>{\bfseries}p{1.7cm} p{10.0cm} p{2.2cm}@{}}
+\rowcolor{navy}
+\textcolor{white}{ID} & \textcolor{white}{Exigence} & \textcolor{white}{Priorité} \\
+\endhead
+RNF-05 & Optimiser le temps de réponse des tableaux de bord et de la cartographie par mise en cache des indicateurs calculés. \crit{le temps de chargement d'un tableau de bord n'excède pas 2~secondes (P95) pour un indicateur déjà calculé.} & \priE \\
+RNF-06 & Concevoir une architecture scalable, adaptée à la montée en charge (nombre de jeux de données, d'utilisateurs et de requêtes de croisement). \crit{l'architecture supporte une multiplication par 5 du nombre de jeux de données ou d'utilisateurs sans refonte majeure.} & \priI \\
+RNF-07 & Proposer une interface responsive, accessible sur ordinateur et mobile. \crit{les tableaux de bord, la carte et l'assistant IA restent utilisables et lisibles sur un écran de largeur~$\geq$~375~px.} & \priE \\
+\end{longtable}
+
+\subsubsection{Fiabilité et qualité des données}
+
+\rowcolors{2}{white}{lightbg}
+\begin{longtable}{@{}>{\bfseries}p{1.7cm} p{10.0cm} p{2.2cm}@{}}
+\rowcolor{navy}
+\textcolor{white}{ID} & \textcolor{white}{Exigence} & \textcolor{white}{Priorité} \\
+\endhead
+RNF-08 & Assurer la traçabilité des sources et des méthodes de calcul de chaque indicateur. \crit{chaque indicateur affiché mentionne sa ou ses sources et sa formule de calcul, consultables par l'utilisateur.} & \priE \\
+RNF-09 & Distinguer clairement les données officielles de l'ANSD des sources externes complémentaires. \crit{un badge ou une mention visuelle identifie l'origine (ANSD ou source externe) de chaque jeu de données et indicateur.} & \priE \\
+RNF-10 & Effectuer des contrôles de cohérence lors de l'ingestion et de la mise à jour des données. \crit{toute anomalie détectée à l'ingestion (valeurs manquantes, format invalide, doublon) est journalisée et bloque la publication du jeu de données concerné.} & \priI \\
+RNF-11 & Garantir une disponibilité du service adaptée à un usage public. \crit{le service est disponible au moins 99~\% du temps sur les heures ouvrées, hors maintenance planifiée et communiquée.} & \priS \\
+RNF-12 & Respecter les standards d'accessibilité numérique. \crit{les pages principales (tableaux de bord, recherche, catalogue) atteignent le niveau AA des WCAG~2.1 sur les critères de contraste et de navigation au clavier.} & \priS \\
+\end{longtable}
+
+% =====================================================================
+% 7. DONNEES
+% =====================================================================
+\section{Jeux de données mobilisés}
+
+Le prototype s'appuie prioritairement sur les jeux de données disponibles sur les plateformes de l'ANSD, sélectionnés selon trois critères~: disponibilité, qualité/documentation, et possibilité de croisement avec d'autres sources.
+
+\rowcolors{2}{white}{lightbg}
+\begin{longtable}{@{}>{\bfseries}p{4.6cm} p{9.9cm}@{}}
+\rowcolor{navy}
+\textcolor{white}{Domaine} & \textcolor{white}{Exemples d'usages et de croisements} \\
+\endhead
+Santé (établissements de santé) & Répartition territoriale, couverture sanitaire, croisement avec la population \\
+Commerce extérieur (exports/imports par pays) & Partenaires commerciaux, évolution des échanges, dépendance commerciale \\
+Démographie et population & Base de croisement transversale~: santé, éducation, emploi, agriculture, infrastructures \\
+Agriculture & Production nationale vs importations, production vs superficie cultivée, production vs population \\
+Éducation & Population scolaire vs infrastructures, éducation vs emploi \\
+Emploi / marché du travail & Niveau d'éducation vs emploi, population active vs chômage, insertion professionnelle \\
+Pauvreté et conditions de vie & Croisement avec santé, éducation, emploi, population et infrastructures \\
+Sources externes complémentaires & Données météorologiques, environnementales, géospatiales --- clairement distinguées des données ANSD \\
+\end{longtable}
+
+Deux jeux de données de référence, disponibles sur Open Data for Africa, sont identifiés pour amorcer le prototype~:
+\begin{itemize}
+  \item \small Établissements de santé --- \url{senegal.opendataforafrica.org/hfhored/etablissements-de-sante}
+  \item \small Exportations et importations du Sénégal par pays --- \url{senegal.opendataforafrica.org/obvklwd/exportations-et-importations-par-pays}
+\end{itemize}
+\normalsize
+
+% =====================================================================
+% 8. EQUIPE
+% =====================================================================
+\section{Équipe projet et rôles}
+
+\rowcolors{2}{white}{lightbg}
+\begin{longtable}{@{}>{\bfseries}p{4.6cm} p{9.9cm}@{}}
+\rowcolor{navy}
+\textcolor{white}{Rôle} & \textcolor{white}{Responsabilités} \\
+\endhead
+Développeur Backend / Data Engineer & API, ingestion des données, traitement, moteur de croisement, base de données \\
+Développeur Frontend & Interface utilisateur, tableaux de bord, graphiques, expérience utilisateur, intégration cartographique \\
+Data Scientist / Statisticien & Choix des méthodes statistiques, construction des indicateurs, validation, analyse des corrélations \\
+Data Analyst / GIS & Données géographiques, cartographie, analyses territoriales, visualisations géospatiales \\
+Product / UX & Besoins utilisateurs, parcours, scénarios d'usage, présentation et valorisation du produit \\
+\end{longtable}
+
+Selon la taille de l'équipe, une même personne peut assurer plusieurs rôles.
+
+% =====================================================================
+% 9. LIVRABLES
+% =====================================================================
+\section{Livrables attendus}
+
+\begin{itemize}
+  \item Une plateforme web fonctionnelle permettant d'explorer les jeux de données, de sélectionner plusieurs sources, d'identifier leurs dimensions communes, de les croiser et de générer des indicateurs~;
+  \item Un catalogue de données présentant les jeux de données intégrés et leurs métadonnées~;
+  \item Un moteur de croisement capable d'effectuer automatiquement les opérations de transformation et de combinaison des données~;
+  \item Une bibliothèque d'indicateurs regroupant les indicateurs générés à partir des différents croisements~;
+  \item Des visualisations interactives~: graphiques, cartes, tableaux, classements, évolutions temporelles~;
+  \item Un module de suggestion proposant des croisements potentiellement pertinents~;
+  \item Une fonctionnalité d'export des résultats (CSV, Excel, PDF, JSON/API)~;
+  \item Une documentation complète~: documentation utilisateur, documentation technique, architecture du système, méthodologie de calcul des indicateurs.
+\end{itemize}
+
+% =====================================================================
+% 10. CAS D'USAGE
+% =====================================================================
+\section{Cas d'usage de démonstration}
+
+Pour la démonstration du prototype, quatre cas d'usage ciblés sont retenus plutôt qu'une couverture exhaustive des jeux de données~:
+
+\subsubsection*{Cas 1 --- Santé}
+Population + Établissements de santé \arrowto\ Population par établissement \arrowto\ Classement des régions \arrowto\ Carte interactive.
+
+\subsubsection*{Cas 2 --- Agriculture}
+Production agricole + Importations \arrowto\ Production vs dépendance extérieure \arrowto\ Graphique temporel.
+
+\subsubsection*{Cas 3 --- Éducation}
+Population + Établissements scolaires + Effectifs \arrowto\ Pression sur les infrastructures scolaires.
+
+\subsubsection*{Cas 4 --- Socio-économique}
+Éducation + Emploi + Population \arrowto\ Analyse de la situation professionnelle selon le niveau d'instruction.
+
+\begin{quotebox}
+« Nous ne créons pas une nouvelle base de données. Nous créons une couche intelligente qui permet de connecter les données existantes afin d'en extraire une valeur nouvelle. »
+\end{quotebox}
+
+% =====================================================================
+% 11. IMPACT
+% =====================================================================
+\section{Impact attendu}
+
+\subsection{Valorisation des données publiques}
+DATA LINK donne une seconde vie aux données statistiques en créant de nouvelles informations à partir de données déjà disponibles. Une donnée isolée peut être informative~; plusieurs données correctement reliées deviennent un outil d'analyse et d'aide à la décision.
+
+\subsection{Accessibilité et aide à la décision}
+La plateforme simplifie le parcours données brutes \arrowto\ croisement \arrowto\ indicateur \arrowto\ visualisation \arrowto\ information exploitable, au bénéfice des administrations publiques, collectivités territoriales, chercheurs, étudiants, journalistes, entreprises, ONG, organisations internationales et entrepreneurs.
+
+\subsection{Écosystème Data au Sénégal}
+Le projet contribue au développement d'une culture de l'analyse de données, de la statistique, de l'Open Data, de l'interopérabilité, de la visualisation et de la réutilisation des données publiques.
+
+% =====================================================================
+% 12. PERSPECTIVES
+% =====================================================================
+\section{Perspectives d'évolution}
+
+\begin{itemize}
+  \item Extension des sources~: davantage de jeux de données ANSD, données des ministères, des collectivités, données environnementales, météorologiques, géographiques et internationales~;
+  \item API publique DATA LINK exposant directement les indicateurs générés (ex.~\small\url{/api/indicators/health-coverage}\normalsize, \small\url{/api/regions/thies}\normalsize)~;
+  \item Génération automatique de rapports statistiques territoriaux personnalisés (région + thèmes)~;
+  \item Assistant IA avancé capable de répondre à des questions complexes multi-critères, avec présentation des sources~;
+  \item Système de recommandation apprenant des croisements fréquemment utilisés par la communauté.
+\end{itemize}
+
+% =====================================================================
+% 13. CONCLUSION
+% =====================================================================
+\section{Positionnement final}
+
+DATA LINK est une plateforme de croisement et de valorisation des données statistiques permettant de transformer plusieurs sources de données isolées en informations, indicateurs et analyses exploitables --- au service des citoyens, chercheurs, entreprises, journalistes, administrations et startups du Sénégal.
+
+\end{document}

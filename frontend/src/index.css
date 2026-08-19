@@ -1,0 +1,41 @@
+/* Charte graphique DATA LINK -- reprend les couleurs du cahier des charges
+   (cahier_des_charges.tex : navy, teal, gold, grey, lightbg). */
+
+:root {
+  --navy: #1b3358;
+  --teal: #0e7c7b;
+  --gold: #c9962c;
+  --grey: #5b6472;
+  --lightbg: #eef2f6;
+
+  --sans: 'Segoe UI', system-ui, Roboto, sans-serif;
+
+  font: 16px/1.5 var(--sans);
+  color: #26303d;
+  background: #f7f9fb;
+  color-scheme: light;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: var(--teal);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--sans);
+}
+
+#root {
+  min-height: 100vh;
+}

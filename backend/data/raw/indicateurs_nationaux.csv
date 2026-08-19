@@ -1,0 +1,24 @@
+# Jeu de données : Indicateurs nationaux dynamiques -- Économie & Population (amorçage / seed)
+# Sources réelles :
+#  - Croissance du PIB et inflation (2020-2024) : Direction générale du
+#    Trésor (France), "Situation économique et financière du Sénégal",
+#    citant les statistiques officielles :
+#    https://www.tresor.economie.gouv.fr/Pays/SN/situation-economique-et-financiere-du-senegal
+#  - Dette publique 2023 (80% du PIB) : même source.
+#  - Indicateurs démographiques (taux de croissance annuel, taux
+#    d'urbanisation, espérance de vie à la naissance) : ANSD, RGPH-5 (2023),
+#    note de presse officielle relayée par l'Ambassade du Sénégal en Belgique :
+#    https://ambassadesenegal.be/wp-content/uploads/2024/07/NOTE-DE-PRESSE-OK.pdf
+category,indicator,value,unit,year,source
+Économie,Croissance du PIB,1.5,%,2020,DG Trésor (France) citant sources officielles
+Économie,Croissance du PIB,6.5,%,2021,DG Trésor (France) citant sources officielles
+Économie,Croissance du PIB,4.0,%,2022,DG Trésor (France) citant sources officielles
+Économie,Croissance du PIB,4.1,%,2023,DG Trésor (France) citant sources officielles
+Économie,Croissance du PIB,4.5,%,2024,DG Trésor (France) citant sources officielles
+Économie,Inflation,9.7,%,2022,DG Trésor (France) citant sources officielles
+Économie,Inflation,5.9,%,2023,DG Trésor (France) citant sources officielles
+Économie,Inflation,1.5,%,2024,DG Trésor (France) citant sources officielles
+Économie,Dette publique,80.0,% du PIB,2023,DG Trésor (France) citant sources officielles
+Population,Taux de croissance démographique annuel,2.9,%/an,2023,ANSD (RGPH-5 -- période 2013-2023)
+Population,Taux d'urbanisation,54.7,%,2023,ANSD (RGPH-5)
+Population,Espérance de vie à la naissance,68.9,années,2023,ANSD (RGPH-5)

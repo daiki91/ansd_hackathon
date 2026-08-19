@@ -1,0 +1,24 @@
+# Jeu de données : Exportations et importations du Sénégal par pays (amorçage / seed)
+# Source réelle (l'export officiel ANSD "Exportations et importations par
+# pays" sur Open Data for Africa n'a pas pu être téléchargé automatiquement --
+# ce site exige une interaction manuelle pour l'export. Ce fichier sera à
+# compléter avec cet export officiel une fois récupéré, en conservant les
+# mêmes colonnes) :
+#  - Direction générale du Trésor (France), "Relations bilatérales - Sénégal",
+#    citant les statistiques du commerce extérieur ANSD pour l'année 2023 :
+#    https://www.tresor.economie.gouv.fr/Pays/SN/relations-bilaterales
+# Les colonnes "share_pct" sont les parts (%) publiées par la source ci-dessus.
+# Les colonnes "value_fcfa_billions" pour les lignes pays sont calculées
+# (part % x total national de l'année) -- elles ne sont pas des valeurs
+# publiées directement et sont donc des estimations à affiner avec les
+# données officielles.
+year,flow_type,country,share_pct,value_fcfa_billions,source
+2023,export,Total,,3224,DG Trésor (France) citant ANSD
+2023,import,Total,,7207,DG Trésor (France) citant ANSD
+2023,export,Mali,23.0,741.5,DG Trésor (France) citant ANSD
+2023,export,Suisse,12.1,390.1,DG Trésor (France) citant ANSD
+2023,export,Inde,10.2,328.9,DG Trésor (France) citant ANSD
+2023,import,France,12.0,864.8,DG Trésor (France) citant ANSD
+2023,import,Chine,10.9,785.6,DG Trésor (France) citant ANSD
+2023,import,Nigéria,8.6,619.8,DG Trésor (France) citant ANSD
+2023,import,Inde,6.7,482.9,DG Trésor (France) citant ANSD

@@ -1,0 +1,21 @@
+# Jeu de données : Population résidente du Sénégal par région (amorçage / seed)
+# Source réelle : ANSD, 5e Recensement Général de la Population et de
+# l'Habitat (RGPH-5), résultats publiés le 31 octobre 2023.
+#  - Population totale nationale (18 126 390 habitants, dont 50,6% d'hommes
+#    et 49,4% de femmes) : note de presse officielle ANSD, relayée par
+#    l'Ambassade du Sénégal en Belgique :
+#    https://ambassadesenegal.be/wp-content/uploads/2024/07/NOTE-DE-PRESSE-OK.pdf
+#  - Parts régionales (Dakar 22%, Thiès 13%, Diourbel 12% -- ces trois
+#    régions concentrent 47% de la population nationale) : même source.
+# Les autres régions ne sont pas encore intégrées (la note de presse ne
+# fournit pas le détail des 14 régions) -- à compléter avec le tableau
+# régional complet du RGPH-5 une fois disponible (voir ANADS :
+# https://anads.ansd.sn/, ou l'Annuaire statistique ANSD).
+# La colonne "count" pour les lignes régionales est calculée
+# (share_pct x population nationale) -- ce n'est pas un chiffre absolu
+# publié directement.
+region,count,share_pct,year,source
+National,18126390,,2023,"ANSD (RGPH-5, note de presse du 31/10/2023)"
+Dakar,3987806,22.0,2023,"ANSD (RGPH-5, note de presse du 31/10/2023)"
+Thiès,2356431,13.0,2023,"ANSD (RGPH-5, note de presse du 31/10/2023)"
+Diourbel,2175167,12.0,2023,"ANSD (RGPH-5, note de presse du 31/10/2023)"

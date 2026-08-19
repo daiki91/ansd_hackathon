@@ -1,0 +1,22 @@
+# Jeu de données : Établissements de santé du Sénégal (amorçage / seed)
+# Sources réelles (l'export officiel ANSD "Établissements de santé" sur Open
+# Data for Africa n'a pas pu être téléchargé automatiquement -- ce site exige
+# une interaction manuelle pour l'export. Ce fichier sera à compléter avec cet
+# export officiel une fois récupéré, en conservant les mêmes colonnes) :
+#  - ANSD / Ministère de la Santé et de l'Action Sociale (MSAS), chiffres
+#    nationaux 2022, via SenePlus :
+#    https://www.seneplus.com/article/le-senegal-sous-les-standards-de-loms-114-centres-de-sante-1-584-postes-de-sante-et-2-197
+#  - Ministère de la Santé et de l'Action Sociale, réunion de coordination
+#    (oct. 2017), chiffres nationaux et régionaux 2017, via La Vie Sénégalaise :
+#    https://laviesenegalaise.com/repartition-des-structures-sanitaires-au-senegal-les-regions-de-dakar-et-thies-se-taillent-la-part-du-lion/
+region,facility_type,count,year,source
+National,Centre de santé,114,2022,ANSD/MSAS via SenePlus
+National,Poste de santé,1584,2022,ANSD/MSAS via SenePlus
+National,Case de santé,2197,2022,ANSD/MSAS via SenePlus
+National,Hôpital,39,2017,MSAS via La Vie Sénégalaise
+National,District sanitaire,76,2017,MSAS via La Vie Sénégalaise
+National,Région médicale,14,2017,MSAS via La Vie Sénégalaise
+Dakar,Hôpital,14,2017,MSAS via La Vie Sénégalaise
+Dakar,Centre de santé,25,2017,MSAS via La Vie Sénégalaise
+Dakar,District sanitaire,10,2017,MSAS via La Vie Sénégalaise
+Thiès,Hôpital,9,2017,MSAS via La Vie Sénégalaise

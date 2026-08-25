@@ -1,23 +1,44 @@
-# Jeu de données : Indicateurs nationaux dynamiques -- Économie & Population (amorçage / seed)
-# Sources réelles :
-#  - Croissance du PIB et inflation (2020-2024) : Direction générale du
-#    Trésor (France), "Situation économique et financière du Sénégal",
-#    citant les statistiques officielles :
+# Jeu de données : Indicateurs nationaux dynamiques -- Économie & Population
+# SOURCES OFFICIELLES :
+#  - Inflation (IHPC, moyennes annuelles calculées depuis l'indice Ensemble base 2023) :
+#      ANSD, "Série IHPC base 2023" téléchargé depuis https://www.ansd.sn/toutes-les-publications
+#  - Croissance du PIB 2020-2024 : Direction générale du Trésor (France) citant
+#    les statistiques officielles sénégalaises :
 #    https://www.tresor.economie.gouv.fr/Pays/SN/situation-economique-et-financiere-du-senegal
-#  - Dette publique 2023 (80% du PIB) : même source.
-#  - Indicateurs démographiques (taux de croissance annuel, taux
-#    d'urbanisation, espérance de vie à la naissance) : ANSD, RGPH-5 (2023),
-#    note de presse officielle relayée par l'Ambassade du Sénégal en Belgique :
-#    https://ambassadesenegal.be/wp-content/uploads/2024/07/NOTE-DE-PRESSE-OK.pdf
+#  - Indicateurs démographiques : ANSD RGPH-5 (2023).
 category,indicator,value,unit,year,source
 Économie,Croissance du PIB,1.5,%,2020,DG Trésor (France) citant sources officielles
 Économie,Croissance du PIB,6.5,%,2021,DG Trésor (France) citant sources officielles
 Économie,Croissance du PIB,4.0,%,2022,DG Trésor (France) citant sources officielles
 Économie,Croissance du PIB,4.1,%,2023,DG Trésor (France) citant sources officielles
 Économie,Croissance du PIB,4.5,%,2024,DG Trésor (France) citant sources officielles
-Économie,Inflation,9.7,%,2022,DG Trésor (France) citant sources officielles
-Économie,Inflation,5.9,%,2023,DG Trésor (France) citant sources officielles
-Économie,Inflation,1.5,%,2024,DG Trésor (France) citant sources officielles
+Économie,Inflation (IHPC),0.8,%,1999,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),-2.6,%,2000,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),3.0,%,2001,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),2.4,%,2002,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),-0.0,%,2003,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),0.4,%,2004,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),1.6,%,2005,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),2.2,%,2006,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),5.5,%,2007,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),6.2,%,2008,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),-1.0,%,2009,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),-0.0,%,2010,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),3.4,%,2011,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),1.4,%,2012,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),0.7,%,2013,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),-1.1,%,2014,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),0.1,%,2015,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),0.8,%,2016,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),2.2,%,2017,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),0.5,%,2018,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),1.0,%,2019,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),2.5,%,2020,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),2.2,%,2021,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),9.7,%,2022,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),5.9,%,2023,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),0.8,%,2024,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
+Économie,Inflation (IHPC),1.4,%,2025,ANSD IHPC base 2023 (calcul: moyenne annuelle des indices)
 Économie,Dette publique,80.0,% du PIB,2023,DG Trésor (France) citant sources officielles
 Population,Taux de croissance démographique annuel,2.9,%/an,2023,ANSD (RGPH-5 -- période 2013-2023)
 Population,Taux d'urbanisation,54.7,%,2023,ANSD (RGPH-5)

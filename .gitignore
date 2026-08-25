@@ -25,3 +25,10 @@ Thumbs.db
 # Node
 node_modules/
 frontend/dist/
+
+# Données brutes volumineuses & fichiers de travail (sources locales uniquement)
+backend/data/raw/ansd_downloads/
+backend/data/raw/*.html
+backend/data/raw/*.pdf
+backend/data/raw/statsenegal_bundle.js
+backend/data/raw/statsenegal_api_*.json

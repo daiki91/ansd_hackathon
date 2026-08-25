@@ -15,6 +15,7 @@ import type {
   DataSource,
   TradeFlow,
   TradeFlowType,
+  RegionalGdp,
 } from './types'
 
 export const API_BASE_URL: string =
@@ -87,10 +88,12 @@ export const api = {
     apiGet<TradeFlow[]>('/api/v1/trade', filters),
   getPopulation: (filters?: { region?: string; year?: number }) =>
     apiGet<Population[]>('/api/v1/population', filters),
-  getProjections: (filters?: { region?: string; year?: number }) =>
-    apiGet<{ projections: { region: string; year: number; population: number }[]; source: string; base_year: number }>(
+  getProjections: (filters?: { region?: string; year?: number; level?: string }) =>
+    apiGet<{ projections: { region?: string; departement?: string; year: number; population: number }[]; source: string; base_year: number; level?: string }>(
       '/api/v1/population/projections', filters
     ),
+  getRegionalGdp: (filters?: { region?: string; year?: number }) =>
+    apiGet<RegionalGdp[]>('/api/v1/regional-gdp', filters),
   getIndicators: (filters?: { category?: string; indicator?: string; year?: number }) =>
     apiGet<Indicator[]>('/api/v1/indicators', filters),
   getRegions: () => apiGet<{ regions: Region[]; count: number }>('/api/v1/geo/regions'),

@@ -1,51 +1,24 @@
-# Jeu de données : Population résidente du Sénégal par région (RGPH-5)
-# Source réelle : ANSD, 5e Recensement Général de la Population et de
-# l'Habitat (RGPH-5), résultats publiés le 31 octobre 2023.
-# Population nationale : 18 126 390 habitants (dont 50,6% hommes, 49,4% femmes)
-# Données régionales complètes extraites du PDF ANSD "Projections démographiques 2023-2073"
-# et de la note de presse RGPH-5.
-# https://www.ansd.sn
+# Jeu de données : Population résidente du Sénégal par région
+# SOURCE OFFICIELLE EXACTE :
+#   ANSD - RGPH-5 (5e Recensement Général de la Population et de l'Habitat, 2023),
+#   valeurs régionales reprises du fichier officiel
+#   "Projections démographiques du Sénégal 2023-2050" (colonne RGPH-5 2023)
+#   téléchargé depuis https://www.ansd.sn/toutes-les-publications
+# Population nationale : 18 126 390 habitants (50,6% hommes / 49,4% femmes).
+# Les projections 2024-2050 sont dans projections_regions_2023_2050.csv.
 region,count,share_pct,year,source
-National,18126390,,2023,"ANSD (RGPH-5, note de presse du 31/10/2023)"
-Dakar,4293686,23.7,2023,"ANSD (RGPH-5, projections démographiques 2023-2073)"
-Thiès,2524516,13.9,2023,"ANSD (RGPH-5, projections démographiques 2023-2073)"
-Diourbel,2018772,11.1,2023,"ANSD (RGPH-5, projections démographiques 2023-2073)"
-Fatick,932651,5.1,2023,"ANSD (RGPH-5, projections démographiques 2023-2073)"
-Kaolack,1375350,7.6,2023,"ANSD (RGPH-5, projections démographiques 2023-2073)"
-Kaffrine,848581,4.7,2023,"ANSD (RGPH-5, projections démographiques 2023-2073)"
-Kolda,941511,5.2,2023,"ANSD (RGPH-5, projections démographiques 2023-2073)"
-Matam,855290,4.7,2023,"ANSD (RGPH-5, projections démographiques 2023-2073)"
-Louga,1155703,6.4,2023,"ANSD (RGPH-5, projections démographiques 2023-2073)"
-Tambacounda,1017563,5.6,2023,"ANSD (RGPH-5, projections démographiques 2023-2073)"
-Sédhiou,606772,3.3,2023,"ANSD (RGPH-5, projections démographiques 2023-2073)"
-Kédougou,252080,1.4,2023,"ANSD (RGPH-5, projections démographiques 2023-2073)"
-Saint-Louis,1230598,6.8,2023,"ANSD (RGPH-5, projections démographiques 2023-2073)"
-Ziguinchor,630079,3.5,2023,"ANSD (RGPH-5, projections démographiques 2023-2073)"
-Dakar,4391495,,2024,"ANSD (Projections démographiques 2023-2073)"
-Thiès,2587090,,2024,"ANSD (Projections démographiques 2023-2073)"
-Diourbel,2063036,,2024,"ANSD (Projections démographiques 2023-2073)"
-Fatick,959568,,2024,"ANSD (Projections démographiques 2023-2073)"
-Kaolack,1415481,,2024,"ANSD (Projections démographiques 2023-2073)"
-Kaffrine,878045,,2024,"ANSD (Projections démographiques 2023-2073)"
-Kolda,969385,,2024,"ANSD (Projections démographiques 2023-2073)"
-Matam,879983,,2024,"ANSD (Projections démographiques 2023-2073)"
-Louga,1186520,,2024,"ANSD (Projections démographiques 2023-2073)"
-Tambacounda,1049252,,2024,"ANSD (Projections démographiques 2023-2073)"
-Sédhiou,625043,,2024,"ANSD (Projections démographiques 2023-2073)"
-Kédougou,259267,,2024,"ANSD (Projections démographiques 2023-2073)"
-Saint-Louis,1259716,,2024,"ANSD (Projections démographiques 2023-2073)"
-Ziguinchor,648404,,2024,"ANSD (Projections démographiques 2023-2073)"
-Dakar,4491139,,2025,"ANSD (Projections démographiques 2023-2073)"
-Thiès,2650885,,2025,"ANSD (Projections démographiques 2023-2073)"
-Diourbel,2108150,,2025,"ANSD (Projections démographiques 2023-2073)"
-Fatick,987160,,2025,"ANSD (Projections démographiques 2023-2073)"
-Kaolack,1456669,,2025,"ANSD (Projections démographiques 2023-2073)"
-Kaffrine,908487,,2025,"ANSD (Projections démographiques 2023-2073)"
-Kolda,998122,,2025,"ANSD (Projections démographiques 2023-2073)"
-Matam,905432,,2025,"ANSD (Projections démographiques 2023-2073)"
-Louga,1218224,,2025,"ANSD (Projections démographiques 2023-2073)"
-Tambacounda,1081983,,2025,"ANSD (Projections démographiques 2023-2073)"
-Sédhiou,644052,,2025,"ANSD (Projections démographiques 2023-2073)"
-Kédougou,266673,,2025,"ANSD (Projections démographiques 2023-2073)"
-Saint-Louis,1289635,,2025,"ANSD (Projections démographiques 2023-2073)"
-Ziguinchor,667393,,2025,"ANSD (Projections démographiques 2023-2073)"
+National,18126390,,2023,"ANSD (RGPH-5, 2023)"
+Dakar,4004425,22.1,2023,ANSD (RGPH-5 2023 via Projections 2023-2050)
+Thiès,2463679,13.6,2023,ANSD (RGPH-5 2023 via Projections 2023-2050)
+Diourbel,2080332,11.5,2023,ANSD (RGPH-5 2023 via Projections 2023-2050)
+Kaolack,1336718,7.4,2023,ANSD (RGPH-5 2023 via Projections 2023-2050)
+Saint-Louis,1202438,6.6,2023,ANSD (RGPH-5 2023 via Projections 2023-2050)
+Louga,1125910,6.2,2023,ANSD (RGPH-5 2023 via Projections 2023-2050)
+Tambacounda,987154,5.4,2023,ANSD (RGPH-5 2023 via Projections 2023-2050)
+Kolda,914797,5.0,2023,ANSD (RGPH-5 2023 via Projections 2023-2050)
+Fatick,906922,5.0,2023,ANSD (RGPH-5 2023 via Projections 2023-2050)
+Matam,831632,4.6,2023,ANSD (RGPH-5 2023 via Projections 2023-2050)
+Kaffrine,820404,4.5,2023,ANSD (RGPH-5 2023 via Projections 2023-2050)
+Ziguinchor,617568,3.4,2023,ANSD (RGPH-5 2023 via Projections 2023-2050)
+Sédhiou,589264,3.3,2023,ANSD (RGPH-5 2023 via Projections 2023-2050)
+Kédougou,245147,1.4,2023,ANSD (RGPH-5 2023 via Projections 2023-2050)

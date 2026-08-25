@@ -27,6 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.db.base import Base  # noqa: E402
 from app.db.session import SessionLocal, engine  # noqa: E402
 from app.models.dataset import Dataset  # noqa: E402
+from app.models.gdp import RegionalGdp  # noqa: E402
 from app.models.health import HealthEstablishment  # noqa: E402
 from app.models.indicator import Indicator  # noqa: E402
 from app.models.population import Population  # noqa: E402
@@ -139,6 +140,15 @@ def ingest_indicators(session) -> int:
     return len(rows)
 
 
+def ingest_regional_gdp(session) -> int:
+    df = pd.read_csv(DATA_DIR / "regional_gdp.csv", comment="#")
+    df = df.where(pd.notnull(df), None)
+    session.query(RegionalGdp).delete()
+    rows = [RegionalGdp(**record) for record in df.to_dict(orient="records")]
+    session.add_all(rows)
+    return len(rows)
+
+
 def ingest_catalog(session) -> int:
     for dataset in DATASETS_CATALOG:
         session.merge(dataset)
@@ -153,10 +163,12 @@ def main() -> None:
         n_trade = ingest_trade_flows(session)
         n_population = ingest_population(session)
         n_indicators = ingest_indicators(session)
+        n_gdp = ingest_regional_gdp(session)
         n_catalog = ingest_catalog(session)
         session.commit()
         print(f"Ingestion terminée : {n_health} lignes santé, {n_trade} lignes commerce, "
               f"{n_population} lignes population, {n_indicators} lignes indicateurs, "
+              f"{n_gdp} lignes PIB régional, "
               f"{n_catalog} jeux de données catalogués.")
     except Exception:
         session.rollback()

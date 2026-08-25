@@ -7,13 +7,14 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Layers, BarChart3, RotateCcw,
-  MapPin, Users, HeartPulse, TrendingUp, Globe, Building2, Database, ExternalLink, RefreshCw, Info,
+  MapPin, Users, HeartPulse, TrendingUp, Globe, Building2, Database, ExternalLink, RefreshCw, Info, Banknote,
+  Route, TrainFront, Ship, Plane,
 } from 'lucide-react'
 import type { Region, Department, DataSource } from '@/api/types'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 // ── Types ────────────────────────────────────────────────────────────
-type DataLayer = 'population' | 'health' | 'indicators' | 'none'
+type DataLayer = 'population' | 'health' | 'indicators' | 'economy' | 'none'
 type GeoLevel = 'regions' | 'departments'
 type ViewMode = '2d' | '3d'
 type Tab = 'map' | 'sources'
@@ -34,10 +35,18 @@ const PALETTES: Record<DataLayer, [string, string, string, string, string]> = {
   population: ['#d4edda', '#81c784', '#388e3c', '#1b5e20', '#0a3010'],
   health: ['#bbdefb', '#64b5f6', '#1e88e5', '#0d47a1', '#051d40'],
   indicators: ['#ffe0b2', '#ffb74d', '#f57c00', '#e65100', '#4a1800'],
+  economy: ['#d1c4e9', '#9575cd', '#673ab7', '#4527a0', '#311b92'],
   none: ['#e8e8e8', '#d0d0d0', '#b0b0b0', '#808080', '#505050'],
 }
 
 const SENEGAL_CENTER: [number, number] = [-14.4524, 14.4974]
+
+// ── Projections RGPH-5 ───────────────────────────────────────────────
+// Le RGPH-5 (2023) est le dernier recensement. Tant qu'il n'y en a pas de
+// nouveau, on se base sur les projections ANSD officielles 2023-2050.
+const PROJECTION_YEARS = Array.from({ length: 2050 - 2023 + 1 }, (_, i) => 2023 + i)
+const DEFAULT_PROJ_YEAR = Math.min(new Date().getFullYear(), 2050)
+const DOMAIN_LABELS: Record<string, string> = { population: 'Population', health: 'Santé', indicators: 'Indicateurs', trade: 'Commerce' }
 
 // ── Fly-to helper ────────────────────────────────────────────────────
 function FlyTo({ center, zoom }: { center: [number, number] | null; zoom?: number }) {
@@ -67,11 +76,46 @@ function BearingPitch({ pitch, bearing }: { pitch: number; bearing: number }) {
   return null
 }
 
+// ── Transport network ────────────────────────────────────────────────
+type TransportKind = 'roads' | 'rails' | 'ports' | 'airports'
+const TRANSPORT_FILES: Record<TransportKind, string> = {
+  roads: '/geo/transport_roads.geojson',
+  rails: '/geo/transport_railways.geojson',
+  ports: '/geo/transport_points.geojson',
+  airports: '/geo/transport_points.geojson',
+}
+const TRANSPORT_META: Record<TransportKind, { label: string; color: string; Icon: typeof Route }> = {
+  roads: { label: 'Routes', color: '#f59e0b', Icon: Route },
+  rails: { label: 'Rails', color: '#e2e8f0', Icon: TrainFront },
+  ports: { label: 'Ports', color: '#22d3ee', Icon: Ship },
+  airports: { label: 'Aéroports', color: '#e879f9', Icon: Plane },
+}
+
 // ── Component ────────────────────────────────────────────────────────
 export function SenegalMap() {
-  const { data: population } = useApiData(() => api.getPopulation(), [])
-  const { data: health } = useApiData(() => api.getHealthEstablishments(), [])
-  const { data: indicators } = useApiData(() => api.getIndicators(), [])
+  // refreshKey : incrémenté après un refresh temps réel pour re-fetcher toutes les données
+  const [refreshKey, setRefreshKey] = useState(0)
+  const { data: population } = useApiData(() => api.getPopulation(), [refreshKey])
+  const { data: health } = useApiData(() => api.getHealthEstablishments(), [refreshKey])
+  const { data: indicators } = useApiData(() => api.getIndicators(), [refreshKey])
+  const { data: gdp } = useApiData(() => api.getRegionalGdp(), [refreshKey])
+
+  // Projections démographiques pour l'année choisie (base RGPH-5 2023)
+  const [projYear, setProjYear] = useState(DEFAULT_PROJ_YEAR)
+  const { data: projections } = useApiData(() => api.getProjections({ year: projYear }), [projYear, refreshKey])
+  const { data: deptProjections } = useApiData(
+    () => api.getProjections({ year: projYear, level: 'departements' }),
+    [projYear, refreshKey],
+  )
+
+  // Fraîcheur des données (temps réel vs cache local)
+  const [refreshing, setRefreshing] = useState(false)
+  const [freshnessView, setFreshnessView] = useState<Record<string, { source: string; status: string }> | null>(null)
+  const [freshnessTs, setFreshnessTs] = useState('')
+
+  useEffect(() => {
+    api.getFreshness().then((f) => setFreshnessView(f.freshness)).catch(() => {})
+  }, [])
 
   const [regions, setRegions] = useState<Region[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
@@ -94,6 +138,26 @@ export function SenegalMap() {
   // Real GeoJSON loaded from files
   const [regionsGeo, setRegionsGeo] = useState<GeoJSON.FeatureCollection | null>(null)
   const [departmentsGeo, setDepartmentsGeo] = useState<GeoJSON.FeatureCollection | null>(null)
+
+  // Réseau de transport (OSM) — couches activables
+  const [transportData, setTransportData] = useState<Partial<Record<TransportKind, GeoJSON.FeatureCollection>>>({})
+  const [transportOn, setTransportOn] = useState<Record<TransportKind, boolean>>({
+    roads: false, rails: false, ports: false, airports: false,
+  })
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.all(
+      Object.values(TRANSPORT_FILES).map((f) => fetch(f).then((r) => r.json()).catch(() => null)),
+    ).then(([roads, rails, points]) => {
+      if (cancelled) return
+      setTransportData({ roads, rails, ports: points, airports: points })
+    })
+    return () => { cancelled = true }
+  }, [])
+
+  const toggleTransport = (k: TransportKind) =>
+    setTransportOn((prev) => ({ ...prev, [k]: !prev[k] }))
 
   // Fetch geo data
   const fetchGeo = useCallback(async () => {
@@ -130,14 +194,53 @@ export function SenegalMap() {
 
   useEffect(() => { fetchGeo(); loadBoundaries() }, [fetchGeo, loadBoundaries])
 
-  // ── Data aggregation ───────────────────────────────────────────────
-  const popByRegion = useMemo(() =>
-    (population ?? []).filter((p) => p.region !== 'National')
-      .reduce<Record<string, number>>((a, p) => { a[p.region] = (a[p.region] ?? 0) + p.count; return a }, {}),
-    [population])
+  // Refresh temps réel : re-fetch sources officielles puis recharge tout le frontend
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true)
+    try {
+      const res = await api.refreshData()
+      setFreshnessView(res.freshness)
+      setFreshnessTs(res.timestamp)
+    } catch (e) {
+      console.error('Refresh failed:', e)
+    } finally {
+      setRefreshing(false)
+    }
+    fetchGeo(); loadBoundaries(); setRefreshKey((k) => k + 1)
+  }, [fetchGeo, loadBoundaries])
 
+  // ── Data aggregation ───────────────────────────────────────────────
+  // Population : priorité aux projections ANSD pour l'année choisie
+  // (RGPH-5 2023 = base ; projections jusqu'au prochain recensement).
+  const popByRegion = useMemo(() => {
+    if (projections && projections.projections.length > 0) {
+      const map: Record<string, number> = {}
+      for (const p of projections.projections) if (p.region) map[p.region] = p.population
+      return map
+    }
+    // Fallback table population : année demandée si présente, sinon dernière année dispo par région
+    const all = (population ?? []).filter((p) => p.region !== 'National')
+    const byYear: Record<string, number> = {}
+    for (const p of all) if (p.year === projYear) byYear[p.region] = p.count
+    if (Object.keys(byYear).length > 0) return byYear
+    const best: Record<string, { year: number; count: number }> = {}
+    for (const p of all) {
+      const b = best[p.region]
+      if (!b || p.year > b.year) best[p.region] = { year: p.year, count: p.count }
+    }
+    return Object.fromEntries(Object.entries(best).map(([k, v]) => [k, v.count]))
+  }, [projections, population, projYear])
+
+  // Population départements : projections ANSD officielles (46 départements),
+  // remplace l'ancienne répartition égale par région.
   const popByDept = useMemo(() => {
     const map: Record<string, number> = {}
+    if (deptProjections?.projections?.length) {
+      for (const p of deptProjections.projections) {
+        if (p.departement) map[p.departement] = p.population
+      }
+      return map
+    }
     for (const r of regions) {
       const rPop = popByRegion[r.name] ?? 0
       const depts = departments.filter((d) => d.region === r.name)
@@ -145,7 +248,14 @@ export function SenegalMap() {
       for (const d of depts) map[d.name] = share
     }
     return map
-  }, [popByRegion, regions, departments])
+  }, [deptProjections, popByRegion, regions, departments])
+
+  // PIB régional : dernière année disponible dans les comptes régionaux ANSD
+  const gdpByRegion = useMemo(() => {
+    const map: Record<string, number> = {}
+    for (const g of gdp ?? []) map[g.region] = g.pib_volume_mds ?? 0
+    return map
+  }, [gdp])
 
   const healthByRegion = useMemo(() =>
     (health ?? []).filter((h) => h.region !== 'National')
@@ -173,13 +283,14 @@ export function SenegalMap() {
     if (source === 'population') return level === 'regions' ? popByRegion : popByDept
     if (source === 'health') return level === 'regions' ? healthByRegion : healthByDept
     if (source === 'indicators') return indicatorByRegion
+    if (source === 'economy') return gdpByRegion
     return {}
-  }, [popByRegion, popByDept, healthByRegion, healthByDept, indicatorByRegion])
+  }, [popByRegion, popByDept, healthByRegion, healthByDept, indicatorByRegion, gdpByRegion])
 
   const activeData = useMemo(() => getDataForLevel(geoLevel, activeLayer), [geoLevel, activeLayer, getDataForLevel])
   const maxValue = useMemo(() => Math.max(...Object.values(activeData), 1), [activeData])
 
-  const formatVal = (v: number) => activeLayer === 'population' ? v.toLocaleString('fr-FR') : Math.round(v).toLocaleString('fr-FR')
+  const formatVal = (v: number) => activeLayer === 'population' || activeLayer === 'economy' ? v.toLocaleString('fr-FR') : Math.round(v).toLocaleString('fr-FR')
 
   // ── Build GeoJSON from real boundaries + data ──────────────────────
   const mapGeoJSON = useMemo<GeoJSON.FeatureCollection | null>(() => {
@@ -270,6 +381,7 @@ export function SenegalMap() {
       population: popByRegion,
       health: healthByRegion,
       indicators: indicatorByRegion,
+      economy: gdpByRegion,
       none: {},
     }
     return selectedZones.map((name) => {
@@ -284,7 +396,7 @@ export function SenegalMap() {
       }
       return entry as { name: string } & Partial<Record<DataLayer, number>>
     })
-  }, [crossMode, selectedZones, crossLayers, popByRegion, healthByRegion, indicatorByRegion])
+  }, [crossMode, selectedZones, crossLayers, popByRegion, healthByRegion, indicatorByRegion, gdpByRegion])
 
 
   // ── Handlers ───────────────────────────────────────────────────────
@@ -311,16 +423,18 @@ export function SenegalMap() {
 
   const layerName = activeLayer === 'population' ? 'Population'
     : activeLayer === 'health' ? 'Santé'
-    : activeLayer === 'indicators' ? 'Indicateurs' : 'N/A'
+    : activeLayer === 'indicators' ? 'Indicateurs'
+    : activeLayer === 'economy' ? 'PIB régional' : 'N/A'
 
   const unitLabel = activeLayer === 'population' ? 'hab.'
     : activeLayer === 'health' ? 'établ.'
-    : activeLayer === 'indicators' ? 'valeur' : ''
+    : activeLayer === 'indicators' ? 'valeur'
+    : activeLayer === 'economy' ? 'Mds FCFA' : ''
 
-  const layerLabel: Record<string, string> = { population: 'Population', health: 'Santé', indicators: 'Indicateurs' }
-  const layerColor: Record<string, string> = { population: 'text-[var(--color-teal)]', health: 'text-red-500', indicators: 'text-blue-500' }
-  const layerUnit: Record<string, string> = { population: 'hab.', health: 'établ.', indicators: 'val.' }
-  const layerIcon: Record<string, typeof Users> = { population: Users, health: HeartPulse, indicators: TrendingUp }
+  const layerLabel: Record<string, string> = { population: 'Population', health: 'Santé', indicators: 'Indicateurs', economy: 'PIB' }
+  const layerColor: Record<string, string> = { population: 'text-[var(--color-teal)]', health: 'text-red-500', indicators: 'text-blue-500', economy: 'text-purple-500' }
+  const layerUnit: Record<string, string> = { population: 'hab.', health: 'établ.', indicators: 'val.', economy: 'Mds' }
+  const layerIcon: Record<string, typeof Users> = { population: Users, health: HeartPulse, indicators: TrendingUp, economy: Banknote }
 
   const toggleCrossLayer = (layer: DataLayer) => {
     setCrossLayers((prev) => {
@@ -384,6 +498,7 @@ export function SenegalMap() {
               {([
                 ['population', Users, 'Population'],
                 ['health', HeartPulse, 'Santé'],
+                ['economy', Banknote, 'PIB'],
                 ['indicators', TrendingUp, 'Indicateurs'],
                 ['none', Globe, 'Aucune'],
               ] as const).map(([key, Icon, label]) => (
@@ -402,6 +517,35 @@ export function SenegalMap() {
                   {label}
                 </Button>
               ))}
+            </div>
+
+            {activeLayer === 'population' && (
+              <div className="flex items-center gap-1.5 bg-white rounded-lg border px-2 py-1 shadow-sm" title="RGPH-5 2023 = dernier recensement · autres années = projections officielles ANSD">
+                <span className="text-[10px] text-[var(--color-grey)] font-medium">Année</span>
+                <select
+                  value={projYear}
+                  onChange={(e) => setProjYear(Number(e.target.value))}
+                  className="h-6 text-xs bg-transparent outline-none cursor-pointer font-medium text-[var(--color-navy)]"
+                >
+                  {PROJECTION_YEARS.map((y) => (
+                    <option key={y} value={y}>{y}{y === 2023 ? ' (RGPH-5)' : ''}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="flex items-center gap-0.5 bg-white rounded-lg border p-0.5 shadow-sm" title="Réseau de transport (OpenStreetMap)">
+              {(Object.keys(TRANSPORT_META) as TransportKind[]).map((k) => {
+                const { label, Icon } = TRANSPORT_META[k]
+                const on = transportOn[k]
+                return (
+                  <Button key={k} variant={on ? 'default' : 'ghost'} size="sm" onClick={() => toggleTransport(k)}
+                    className={`h-7 text-xs px-2 ${on ? 'bg-[var(--color-teal)] text-white' : ''}`} title={label}>
+                    <Icon className={`h-3 w-3 ${on ? 'text-white' : 'text-[var(--color-grey)]'}`} />
+                    <span className="ml-1">{label}</span>
+                  </Button>
+                )
+              })}
             </div>
 
             <div className="flex items-center gap-0.5 bg-white rounded-lg border p-0.5 shadow-sm">
@@ -428,8 +572,9 @@ export function SenegalMap() {
               >
                 <BarChart3 className="mr-1 h-3 w-3" />Comparer
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => { fetchGeo(); loadBoundaries() }} className="h-7 text-xs text-[var(--color-grey)]">
-                <RefreshCw className="mr-1 h-3 w-3" />Actualiser
+              <Button variant="ghost" size="sm" onClick={handleRefresh} disabled={refreshing} className="h-7 text-xs text-[var(--color-grey)]">
+                <RefreshCw className={`mr-1 h-3 w-3 ${refreshing ? 'animate-spin' : ''}`} />
+                {refreshing ? 'Synchro…' : 'Actualiser'}
               </Button>
             </div>
           </div>
@@ -438,7 +583,7 @@ export function SenegalMap() {
           {crossMode && (
             <div className="flex items-center gap-2 px-1 py-1.5 bg-[var(--color-lightbg)] rounded-lg border border-dashed border-[var(--color-teal)]">
               <span className="text-[10px] text-[var(--color-grey)] font-medium ml-1">Indicateurs à croiser :</span>
-              {(['population', 'health', 'indicators'] as DataLayer[]).map((layer) => {
+              {(['population', 'health', 'economy', 'indicators'] as DataLayer[]).map((layer) => {
                 const Icon = layerIcon[layer]
                 const active = crossLayers.includes(layer)
                 return (
@@ -529,6 +674,71 @@ export function SenegalMap() {
                 </Source>
               )}
 
+              {/* ── Réseau de transport (OSM) ── */}
+              {transportOn.roads && transportData.roads && (
+                <Source id="t-roads" type="geojson" data={transportData.roads}>
+                  <Layer id="t-roads-line" type="line" paint={{
+                    'line-color': ['match', ['get', 'kind'],
+                      'motorway', '#f59e0b',
+                      'trunk', '#fb923c',
+                      '#fdba74'],
+                    'line-width': ['match', ['get', 'kind'], 'motorway', 2.6, 'trunk', 1.9, 1.3],
+                    'line-opacity': 0.85,
+                  }} layout={{ 'line-cap': 'round' }} />
+                </Source>
+              )}
+              {transportOn.rails && transportData.rails && (
+                <Source id="t-rails" type="geojson" data={transportData.rails}>
+                  <Layer id="t-rails-line" type="line" paint={{
+                    'line-color': '#e2e8f0',
+                    'line-width': 1.8,
+                    'line-dasharray': [3, 2],
+                    'line-opacity': 0.95,
+                  }} />
+                </Source>
+              )}
+              {(transportOn.ports || transportOn.airports) && transportData.ports && (
+                <Source id="t-points" type="geojson" data={transportData.ports}>
+                  {transportOn.airports && (
+                    <Layer id="t-airports-circle" type="circle"
+                      filter={['==', ['get', 'kind'], 'airport']}
+                      paint={{
+                        'circle-color': '#e879f9',
+                        'circle-radius': 5,
+                        'circle-stroke-color': '#ffffff',
+                        'circle-stroke-width': 1.2,
+                        'circle-opacity': 0.95,
+                      }} />
+                  )}
+                  {transportOn.ports && (
+                    <Layer id="t-ports-circle" type="circle"
+                      filter={['==', ['get', 'kind'], 'port']}
+                      paint={{
+                        'circle-color': '#22d3ee',
+                        'circle-radius': 4.5,
+                        'circle-stroke-color': '#ffffff',
+                        'circle-stroke-width': 1.2,
+                        'circle-opacity': 0.95,
+                      }} />
+                  )}
+                  <Layer id="t-points-label" type="symbol" minzoom={7}
+                    filter={['in', ['get', 'kind'], ['literal', [...(transportOn.airports ? ['airport'] : []), ...(transportOn.ports ? ['port'] : [])]]]}
+                    layout={{
+                      'text-field': ['get', 'name'],
+                      'text-size': 10,
+                      'text-font': ['Open Sans Regular', 'Noto Sans Regular'],
+                      'text-offset': [0, 1.3],
+                      'text-anchor': 'top',
+                      'text-allow-overlap': false,
+                    }}
+                    paint={{
+                      'text-color': '#ffffff',
+                      'text-halo-color': 'rgba(0,0,0,0.85)',
+                      'text-halo-width': 1.4,
+                    }} />
+                </Source>
+              )}
+
               {/* Labels */}
               {labelsGeo && (
                 <Source id="labels" type="geojson" data={labelsGeo}>
@@ -572,16 +782,39 @@ export function SenegalMap() {
             )}
 
             {/* Legend */}
-            {activeLayer !== 'none' && (
-              <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm rounded-lg p-3 text-xs text-white shadow-lg">
-                <p className="font-semibold mb-2 flex items-center gap-1.5"><Info className="h-3 w-3 opacity-60" />{layerName}</p>
-                <div className="flex items-center gap-0.5">
-                  {PALETTES[activeLayer].map((c, i) => <span key={i} className="w-6 h-2.5 rounded-sm" style={{ background: c }} />)}
-                </div>
-                <div className="flex justify-between mt-1.5 text-[10px] opacity-70">
-                  <span>0</span>
-                  <span>{maxValue.toLocaleString('fr-FR')} {unitLabel}</span>
-                </div>
+            {(activeLayer !== 'none' || Object.values(transportOn).some(Boolean)) && (
+              <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm rounded-lg p-3 text-xs text-white shadow-lg max-w-[210px]">
+                {activeLayer !== 'none' && (
+                  <>
+                    <p className="font-semibold mb-2 flex items-center gap-1.5"><Info className="h-3 w-3 opacity-60" />{layerName}</p>
+                    <div className="flex items-center gap-0.5">
+                      {PALETTES[activeLayer].map((c, i) => <span key={i} className="w-6 h-2.5 rounded-sm" style={{ background: c }} />)}
+                    </div>
+                    <div className="flex justify-between mt-1.5 text-[10px] opacity-70">
+                      <span>0</span>
+                      <span>{maxValue.toLocaleString('fr-FR')} {unitLabel}</span>
+                    </div>
+                  </>
+                )}
+                {Object.values(transportOn).some(Boolean) && (
+                  <div className={activeLayer !== 'none' ? 'mt-2.5 pt-2 border-t border-white/15' : ''}>
+                    {Object.values(transportOn).some(Boolean) && activeLayer === 'none' && (
+                      <p className="font-semibold mb-1.5 flex items-center gap-1.5"><Info className="h-3 w-3 opacity-60" />Transport</p>
+                    )}
+                    <div className="space-y-1">
+                      {(Object.keys(TRANSPORT_META) as TransportKind[]).filter((k) => transportOn[k]).map((k) => {
+                        const { label, color, Icon } = TRANSPORT_META[k]
+                        return (
+                          <p key={k} className="flex items-center gap-1.5 text-[10px]">
+                            <Icon className="h-3 w-3 shrink-0" />
+                            <span className="w-4 h-0.5 rounded-full inline-block" style={{ background: color }} />
+                            {label}{k === 'roads' ? ' (A/N)' : ''}
+                          </p>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -647,7 +880,7 @@ export function SenegalMap() {
                               <div key={layer} className="flex items-center justify-between text-[11px]">
                                 <span className={layerColor[layer]}>{layerLabel[layer].slice(0, 4)}</span>
                                 <span className="font-semibold">
-                                  {layer === 'indicators' ? val.toFixed(1) : formatVal(val)}
+                                  {layer === 'economy' ? val.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : layer === 'indicators' ? val.toFixed(1) : Math.round(val).toLocaleString('fr-FR')}
                                   <span className="text-[9px] opacity-50 ml-0.5">{layerUnit[layer]}</span>
                                 </span>
                               </div>
@@ -717,12 +950,24 @@ export function SenegalMap() {
             </Card>
           )}
 
-          <div className="text-xs text-[var(--color-grey)] flex items-center gap-5 px-1">
+          <div className="text-xs text-[var(--color-grey)] flex flex-wrap items-center gap-x-4 gap-y-1 px-1">
             <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />Clic gauche = sélectionner</span>
             <span>Molette = zoom</span>
             <span>Clic droit = rotation</span>
-            <span className="ml-auto opacity-60">Source: geoBoundaries (CC-BY 4.0)</span>
+            {Object.entries(freshnessView ?? {}).filter(([k]) => DOMAIN_LABELS[k]).map(([k, v]) => (
+              <span key={k} className="flex items-center gap-1" title={v.source}>
+                <span className={`w-1.5 h-1.5 rounded-full ${v.status === 'live' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                {DOMAIN_LABELS[k]}
+              </span>
+            ))}
+            {freshnessTs && <span className="opacity-60">maj {new Date(freshnessTs).toLocaleTimeString('fr-FR')}</span>}
+            <span className="ml-auto opacity-60">Base RGPH-5 (2023) · projections ANSD jusqu'au prochain recensement</span>
           </div>
+          {Object.values(transportOn).some(Boolean) && (
+            <div className="text-[10px] text-[var(--color-grey)] px-1 opacity-60">
+              Réseau de transport © OpenStreetMap contributors (ODbL)
+            </div>
+          )}
         </>
       )}
     </div>

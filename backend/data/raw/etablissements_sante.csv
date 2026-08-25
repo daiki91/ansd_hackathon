@@ -1,83 +1,94 @@
-# Jeu de données : Établissements de santé du Sénégal par région
-# Sources :
-#  - ANSD / MSAS, chiffres nationaux 2022 (SenePlus) : 114 centres, 1584 postes, 2197 cases
-#  - MSAS réunion coordination oct. 2017 : répartition régionale
-#  - ANSD "Établissements de santé" via Open Data for Africa
-#  Répartition régionale estimée à partir des parts du MSAS 2017 + mises à jour 2022
+# Jeu de données : Infrastructures sanitaires publiques du Sénégal par région
+# SOURCE OFFICIELLE EXACTE :
+#   ANSD - SECTION F-SANTE_2023.xls, Tableau F.04.03 "Infrastructures sanitaires par région"
+#   Source primaire : DPRS/MSAS (Direction de la Planification, de la Recherche et des Statistiques,
+#   Ministère de la Santé et de l'Action Sociale)
+#   Fichier téléchargé depuis https://www.ansd.sn/toutes-les-publications
+# Année régionale la plus complète : 2018. Séries nationales : 1970-2018.
+# NB : cases de santé non ventilées par région dans ce tableau.
 region,facility_type,count,year,source
-National,Centre de santé,114,2022,ANSD/MSAS via SenePlus
-National,Poste de santé,1584,2022,ANSD/MSAS via SenePlus
-National,Case de santé,2197,2022,ANSD/MSAS via SenePlus
-National,Hôpital,39,2022,ANSD/MSAS via SenePlus
-National,District sanitaire,76,2017,MSAS via La Vie Sénégalaise
-National,Région médicale,14,2017,MSAS
-Dakar,Hôpital,14,2022,MSAS estimé régional
-Dakar,Centre de santé,25,2022,MSAS estimé régional
-Dakar,Poste de santé,48,2022,MSAS estimé régional
-Dakar,Case de santé,12,2022,MSAS estimé régional
-Dakar,District sanitaire,10,2017,MSAS
-Thiès,Hôpital,9,2022,MSAS estimé régional
-Thiès,Centre de santé,18,2022,MSAS estimé régional
-Thiès,Poste de santé,195,2022,MSAS estimé régional
-Thiès,Case de santé,280,2022,MSAS estimé régional
-Thiès,District sanitaire,8,2017,MSAS
-Diourbel,Hôpital,4,2022,MSAS estimé régional
-Diourbel,Centre de santé,12,2022,MSAS estimé régional
-Diourbel,Poste de santé,168,2022,MSAS estimé régional
-Diourbel,Case de santé,245,2022,MSAS estimé régional
-Diourbel,District sanitaire,6,2017,MSAS
-Fatick,Hôpital,3,2022,MSAS estimé régional
-Fatick,Centre de santé,8,2022,MSAS estimé régional
-Fatick,Poste de santé,95,2022,MSAS estimé régional
-Fatick,Case de santé,155,2022,MSAS estimé régional
-Fatick,District sanitaire,5,2017,MSAS
-Kaolack,Hôpital,3,2022,MSAS estimé régional
-Kaolack,Centre de santé,10,2022,MSAS estimé régional
-Kaolack,Poste de santé,125,2022,MSAS estimé régional
-Kaolack,Case de santé,198,2022,MSAS estimé régional
-Kaolack,District sanitaire,6,2017,MSAS
-Kaffrine,Hôpital,2,2022,MSAS estimé régional
-Kaffrine,Centre de santé,6,2022,MSAS estimé régional
-Kaffrine,Poste de santé,82,2022,MSAS estimé régional
-Kaffrine,Case de santé,120,2022,MSAS estimé régional
-Kaffrine,District sanitaire,4,2017,MSAS
-Kolda,Hôpital,3,2022,MSAS estimé régional
-Kolda,Centre de santé,7,2022,MSAS estimé régional
-Kolda,Poste de santé,98,2022,MSAS estimé régional
-Kolda,Case de santé,165,2022,MSAS estimé régional
-Kolda,District sanitaire,5,2017,MSAS
-Matam,Hôpital,2,2022,MSAS estimé régional
-Matam,Centre de santé,5,2022,MSAS estimé régional
-Matam,Poste de santé,72,2022,MSAS estimé régional
-Matam,Case de santé,105,2022,MSAS estimé régional
-Matam,District sanitaire,4,2017,MSAS
-Louga,Hôpital,3,2022,MSAS estimé régional
-Louga,Centre de santé,8,2022,MSAS estimé régional
-Louga,Poste de santé,105,2022,MSAS estimé régional
-Louga,Case de santé,170,2022,MSAS estimé régional
-Louga,District sanitaire,5,2017,MSAS
-Tambacounda,Hôpital,3,2022,MSAS estimé régional
-Tambacounda,Centre de santé,6,2022,MSAS estimé régional
-Tambacounda,Poste de santé,78,2022,MSAS estimé régional
-Tambacounda,Case de santé,130,2022,MSAS estimé régional
-Tambacounda,District sanitaire,5,2017,MSAS
-Sédhiou,Hôpital,2,2022,MSAS estimé régional
-Sédhiou,Centre de santé,5,2022,MSAS estimé régional
-Sédhiou,Poste de santé,65,2022,MSAS estimé régional
-Sédhiou,Case de santé,110,2022,MSAS estimé régional
-Sédhiou,District sanitaire,4,2017,MSAS
-Kédougou,Hôpital,1,2022,MSAS estimé régional
-Kédougou,Centre de santé,3,2022,MSAS estimé régional
-Kédougou,Poste de santé,35,2022,MSAS estimé régional
-Kédougou,Case de santé,55,2022,MSAS estimé régional
-Kédougou,District sanitaire,3,2017,MSAS
-Saint-Louis,Hôpital,4,2022,MSAS estimé régional
-Saint-Louis,Centre de santé,9,2022,MSAS estimé régional
-Saint-Louis,Poste de santé,115,2022,MSAS estimé régional
-Saint-Louis,Case de santé,185,2022,MSAS estimé régional
-Saint-Louis,District sanitaire,6,2017,MSAS
-Ziguinchor,Hôpital,3,2022,MSAS estimé régional
-Ziguinchor,Centre de santé,6,2022,MSAS estimé régional
-Ziguinchor,Poste de santé,78,2022,MSAS estimé régional
-Ziguinchor,Case de santé,127,2022,MSAS estimé régional
-Ziguinchor,District sanitaire,4,2017,MSAS
+Dakar,Hôpital,14,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Dakar,Centre de santé,24,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Dakar,Poste de santé,201,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Diourbel,Hôpital,3,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Diourbel,Centre de santé,8,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Diourbel,Poste de santé,103,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Fatick,Hôpital,1,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Fatick,Centre de santé,8,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Fatick,Poste de santé,124,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Kaolack,Hôpital,1,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Kaolack,Centre de santé,4,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Kaolack,Poste de santé,118,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Kolda,Hôpital,1,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Kolda,Centre de santé,4,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Kolda,Poste de santé,66,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Louga,Hôpital,2,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Louga,Centre de santé,10,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Louga,Poste de santé,125,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Matam,Hôpital,2,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Matam,Centre de santé,5,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Matam,Poste de santé,100,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Saint-Louis,Hôpital,3,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Saint-Louis,Centre de santé,7,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Saint-Louis,Poste de santé,134,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Tambacounda,Hôpital,1,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Tambacounda,Centre de santé,7,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Tambacounda,Poste de santé,138,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Thiès,Hôpital,5,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Thiès,Centre de santé,9,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Thiès,Poste de santé,180,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Ziguinchor,Hôpital,3,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Ziguinchor,Centre de santé,5,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Ziguinchor,Poste de santé,124,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Kedougou,Hôpital,0,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Kedougou,Centre de santé,3,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Kedougou,Poste de santé,42,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Kaffrine,Hôpital,1,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Kaffrine,Centre de santé,4,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Kaffrine,Poste de santé,89,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Sédhiou,Hôpital,1,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Sédhiou,Centre de santé,3,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+Sédhiou,Poste de santé,61,2018,"ANSD/MSAS DPRS (Tableau F.04.03, SECTION F-SANTE 2023)"
+National,Hôpital,22,2005,ANSD/MSAS DPRS (Tableau F.04.01/F.04.03)
+National,Hôpital,22,2006,ANSD/MSAS DPRS (Tableau F.04.01/F.04.03)
+National,Hôpital,22,2007,ANSD/MSAS DPRS (Tableau F.04.01/F.04.03)
+National,Hôpital,22,2008,ANSD/MSAS DPRS (Tableau F.04.01/F.04.03)
+National,Hôpital,25,2009,ANSD/MSAS DPRS (Tableau F.04.01/F.04.03)
+National,Hôpital,34,2010,ANSD/MSAS DPRS (Tableau F.04.01/F.04.03)
+National,Hôpital,34,2011,ANSD/MSAS DPRS (Tableau F.04.01/F.04.03)
+National,Hôpital,30,2012,ANSD/MSAS DPRS (Tableau F.04.01/F.04.03)
+National,Hôpital,30,2013,ANSD/MSAS DPRS (Tableau F.04.01/F.04.03)
+National,Hôpital,34,2015,ANSD/MSAS DPRS (Tableau F.04.01/F.04.03)
+National,Hôpital,34,2016,ANSD/MSAS DPRS (Tableau F.04.01/F.04.03)
+National,Hôpital,34,2017,ANSD/MSAS DPRS (Tableau F.04.01/F.04.03)
+National,Hôpital,38,2018,ANSD/MSAS DPRS (Tableau F.04.01/F.04.03)
+National,Centre de santé,54,2000,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Centre de santé,58,2001,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Centre de santé,67,2005,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Centre de santé,68,2006,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Centre de santé,75,2007,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Centre de santé,95,2008,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Centre de santé,78,2009,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Centre de santé,89,2010,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Centre de santé,88,2011,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Centre de santé,88,2012,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Centre de santé,88,2013,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Centre de santé,97,2015,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Centre de santé,100,2016,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Centre de santé,100,2017,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Centre de santé,101,2018,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Poste de santé,824,2000,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Poste de santé,888,2001,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Poste de santé,936,2005,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Poste de santé,949,2006,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Poste de santé,980,2007,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Poste de santé,986,2008,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Poste de santé,1195,2009,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Poste de santé,1240,2010,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Poste de santé,1257,2011,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Poste de santé,1131,2012,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Poste de santé,1131,2013,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Poste de santé,1452,2015,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Poste de santé,1458,2016,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Poste de santé,1605,2017,ANSD/MSAS DPRS (Tableau F.04.03)
+National,Poste de santé,1605,2018,ANSD/MSAS DPRS (Tableau F.04.03)

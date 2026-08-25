@@ -63,9 +63,7 @@ SOURCES = {
     "opendata_senegal_ckan": {
         "name": "Open Data Sénégal",
         "base_url": "https://data.sn/api/3/action",
-        " datasets": [
-            "population", "sante", "indicateurs"
-        ],
+        "datasets": ["population", "sante", "indicateurs"],
     },
     "ansd": {
         "name": "ANSD (Agence Nationale de la Statistique)",
@@ -226,7 +224,7 @@ def fetch_trade() -> dict[str, Any]:
     """Fetch trade data from official sources."""
     rows = _load_local_csv("commerce_exterieur.csv")
     _freshness["trade"] = {
-        "source": "ANSD Note d'Analyse du Commerce Extérieur (CSV local)",
+        "source": "ANSD/DGIT (séries mensuelles 2010-2026, CSV local)",
         "url": "data/raw/commerce_exterieur.csv",
         "fetched_at": _now_iso(),
         "rows": len(rows),
@@ -272,5 +270,46 @@ def get_freshness() -> dict[str, Any]:
 
 # ── Load projections from CSV ────────────────────────────────────────
 def load_projections() -> list[dict]:
-    """Load demographic projections 2023-2073 from local CSV."""
-    return _load_local_csv("projections_2023_2028.csv")
+    """Load official ANSD demographic projections 2023-2050 (regions).
+
+    Source : fichier officiel "Projections démographiques du Sénégal
+    2023-2050" téléchargé depuis ansd.sn. Base RGPH-5 2023.
+    """
+    path = DATA_DIR / "projections_regions_2023_2050.csv"
+    if not path.exists():
+        return []
+    rows_out = []
+    lines = [l for l in open(path, encoding="utf-8") if not l.startswith("#")]
+    reader = csv.DictReader(io.StringIO("".join(lines)))
+    for row in reader:
+        name = row.pop("nom", None)
+        if not name:
+            continue
+        for year, val in row.items():
+            if year and val:
+                try:
+                    rows_out.append({"region": name, "year": int(year), "population": int(val)})
+                except ValueError:
+                    pass
+    return rows_out
+
+
+def load_department_projections() -> list[dict]:
+    """Load official ANSD projections 2023-2050 for departments (46)."""
+    path = DATA_DIR / "projections_departements_2023_2050.csv"
+    if not path.exists():
+        return []
+    rows_out = []
+    lines = [l for l in open(path, encoding="utf-8") if not l.startswith("#")]
+    reader = csv.DictReader(io.StringIO("".join(lines)))
+    for row in reader:
+        name = row.pop("nom", None)
+        if not name:
+            continue
+        for year, val in row.items():
+            if year and val:
+                try:
+                    rows_out.append({"departement": name.title(), "year": int(year), "population": int(val)})
+                except ValueError:
+                    pass
+    return rows_out

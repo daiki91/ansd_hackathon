@@ -35,10 +35,13 @@ def main():
     total = 0
 
     files = {
-        "population.csv": "Population du Sénégal par région (RGPH-5, 2023)",
-        "etablissements_sante.csv": "Établissements de santé du Sénégal par région et type",
-        "commerce_exterieur.csv": "Commerce extérieur du Sénégal - exportations et importations par pays",
-        "indicateurs_nationaux.csv": "Indicateurs nationaux du Sénégal - économie et démographie",
+        "population.csv": "Population du Sénégal par région (RGPH-5, 2023, source ANSD)",
+        "projections_regions_2023_2050.csv": "Projections démographiques du Sénégal par région 2023-2050 (ANSD, base RGPH-5)",
+        "projections_departements_2023_2050.csv": "Projections démographiques du Sénégal par département 2023-2050 (ANSD)",
+        "etablissements_sante.csv": "Établissements de santé publics du Sénégal par région et type (ANSD/MSAS DPRS, tableau F.04.03)",
+        "commerce_exterieur.csv": "Commerce extérieur du Sénégal - exportations et importations par pays et par année en milliards FCFA (ANSD/DGIT, séries 2010-2026)",
+        "regional_gdp.csv": "PIB régional du Sénégal en volume et valeur, milliards FCFA, avec structure sectorielle primaire/secondaire/tertiaire (ANSD comptes régionaux 2020-2023)",
+        "indicateurs_nationaux.csv": "Indicateurs nationaux du Sénégal - croissance PIB, inflation IHPC officielle, dette publique, démographie",
     }
 
     for filename, source_name in files.items():

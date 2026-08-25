@@ -55,6 +55,17 @@ export interface Indicator {
   source: string
 }
 
+export interface RegionalGdp {
+  id: number
+  region: string
+  year: number
+  pib_volume_mds: number | null
+  pib_valeur_mds: number | null
+  part_primaire_pct: number | null
+  part_secondaire_pct: number | null
+  part_tertiaire_pct: number | null
+}
+
 export type ExportFormat = 'csv' | 'excel' | 'json'
 
 export interface Region {

@@ -1,0 +1,27 @@
+# Jeu de données : Superficie des régions du Sénégal (km²)
+# SOURCE :
+#   Wikipédia, article "Régions du Sénégal" (tableau "Superficie et population"),
+#   valeurs reprises du découpage administratif officiel (14 régions).
+#   Contrairement aux autres jeux de données du projet, ceci n'est PAS une
+#   source ANSD directe -- à recouper avec une publication ANSD/ANAT officielle
+#   si possible (voir README backend). Traité comme donnée de référence externe
+#   (RNF-09 : distinguer clairement source ANSD / source externe).
+# VALIDATION : somme des 14 superficies régionales = 196 712 km², cohérente
+# avec la superficie totale communément admise du Sénégal (~196 722 km²,
+# écart 10 km² soit 0.005%, imputable à des arrondis).
+# Donnée statique (pas de série temporelle) : une seule valeur par région.
+region,area_km2,source
+Dakar,547,Wikipédia (Régions du Sénégal)
+Ziguinchor,7352,Wikipédia (Régions du Sénégal)
+Diourbel,4824,Wikipédia (Régions du Sénégal)
+Saint-Louis,19241,Wikipédia (Régions du Sénégal)
+Tambacounda,42364,Wikipédia (Régions du Sénégal)
+Kaolack,5357,Wikipédia (Régions du Sénégal)
+Thiès,6670,Wikipédia (Régions du Sénégal)
+Louga,24889,Wikipédia (Régions du Sénégal)
+Fatick,6849,Wikipédia (Régions du Sénégal)
+Kolda,13771,Wikipédia (Régions du Sénégal)
+Matam,29445,Wikipédia (Régions du Sénégal)
+Kaffrine,11262,Wikipédia (Régions du Sénégal)
+Kédougou,16800,Wikipédia (Régions du Sénégal)
+Sédhiou,7341,Wikipédia (Régions du Sénégal)

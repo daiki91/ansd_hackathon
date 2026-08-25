@@ -16,6 +16,12 @@ import type {
   TradeFlow,
   TradeFlowType,
   RegionalGdp,
+  AgricultureProduction,
+  CerealImports,
+  RegionArea,
+  CrossingRunRequest,
+  CrossingRunResult,
+  CrossingCompatibleResult,
 } from './types'
 
 export const API_BASE_URL: string =
@@ -53,6 +59,35 @@ async function apiGet<T>(path: string, params?: Record<string, string | number |
 
   if (!response.ok) {
     throw new ApiError(`Erreur API (${response.status}) sur ${path}`, response.status)
+  }
+
+  return (await response.json()) as T
+}
+
+async function apiPost<T>(path: string, body: unknown): Promise<T> {
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+  } catch {
+    throw new ApiError(
+      `Impossible de contacter l'API DATA LINK sur ${API_BASE_URL}. Le backend est-il bien démarré ?`,
+      0,
+    )
+  }
+
+  if (!response.ok) {
+    let detail = ''
+    try {
+      const errBody = await response.json()
+      detail = errBody?.detail ? ` : ${errBody.detail}` : ''
+    } catch {
+      // pas de corps JSON exploitable
+    }
+    throw new ApiError(`Erreur API (${response.status}) sur ${path}${detail}`, response.status)
   }
 
   return (await response.json()) as T
@@ -102,6 +137,15 @@ export const api = {
   getDataSources: () => apiGet<{ sources: DataSource[]; count: number }>('/api/v1/geo/sources'),
   refreshData: () => apiGet<RefreshResult>('/api/v1/data/refresh'),
   getFreshness: () => apiGet<DataFreshness>('/api/v1/data/freshness'),
+  getAgricultureProduction: (filters?: { year?: number }) =>
+    apiGet<AgricultureProduction[]>('/api/v1/agriculture/production', filters),
+  getAgricultureImports: (filters?: { year?: number }) =>
+    apiGet<CerealImports[]>('/api/v1/agriculture/imports', filters),
+  getRegionAreas: () => apiGet<RegionArea[]>('/api/v1/region-areas'),
+  getCrossingCompatible: (datasetId: string) =>
+    apiGet<CrossingCompatibleResult>('/api/v1/crossing/compatible', { dataset_id: datasetId }),
+  runCrossing: (payload: CrossingRunRequest) =>
+    apiPost<CrossingRunResult>('/api/v1/crossing/run', payload),
 }
 
 export { ApiError }

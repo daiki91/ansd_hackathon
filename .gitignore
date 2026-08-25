@@ -17,6 +17,7 @@ chroma_db/
 # IDE
 .vscode/
 .idea/
+.claude/
 
 # OS
 .DS_Store

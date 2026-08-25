@@ -17,7 +17,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.db.base import Base
 from app.db.session import engine
-from app.routers import catalog, chat, data_router, geo, gdp_data, health_check, health_data, indicators_data, population_data, trade_data
+from app.routers import (
+    agriculture_data,
+    catalog,
+    chat,
+    crossing,
+    data_router,
+    geo,
+    gdp_data,
+    geography_data,
+    health_check,
+    health_data,
+    indicators_data,
+    population_data,
+    trade_data,
+)
 
 settings = get_settings()
 
@@ -59,4 +73,7 @@ app.include_router(indicators_data.router, prefix=settings.API_V1_PREFIX)
 app.include_router(gdp_data.router, prefix=settings.API_V1_PREFIX)
 app.include_router(chat.router, prefix=settings.API_V1_PREFIX)
 app.include_router(data_router.router, prefix=settings.API_V1_PREFIX)
+app.include_router(agriculture_data.router, prefix=settings.API_V1_PREFIX)
+app.include_router(geography_data.router, prefix=settings.API_V1_PREFIX)
+app.include_router(crossing.router, prefix=settings.API_V1_PREFIX)
 app.include_router(geo.router)

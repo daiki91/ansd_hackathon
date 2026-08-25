@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import Map, { Source, Layer, NavigationControl, useMap } from 'react-map-gl/maplibre'
-import { api, API_BASE_URL } from '@/api/client'
+import { api, API_BASE_URL, ApiError } from '@/api/client'
+import type { CrossingRunResult } from '@/api/types'
 import { useApiData } from '@/hooks/useApiData'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -47,6 +48,14 @@ const SENEGAL_CENTER: [number, number] = [-14.4524, 14.4974]
 const PROJECTION_YEARS = Array.from({ length: 2050 - 2023 + 1 }, (_, i) => 2023 + i)
 const DEFAULT_PROJ_YEAR = Math.min(new Date().getFullYear(), 2050)
 const DOMAIN_LABELS: Record<string, string> = { population: 'Population', health: 'Santé', indicators: 'Indicateurs', trade: 'Commerce' }
+
+// ── Croisement : mapping DataLayer (carte) -> dataset_id (moteur backend) ──
+const LAYER_TO_DATASET: Record<Exclude<DataLayer, 'none'>, string> = {
+  population: 'population',
+  health: 'etablissements-sante',
+  economy: 'regional-gdp',
+  indicators: 'indicateurs-nationaux',
+}
 
 // ── Fly-to helper ────────────────────────────────────────────────────
 function FlyTo({ center, zoom }: { center: [number, number] | null; zoom?: number }) {
@@ -374,29 +383,56 @@ export function SenegalMap() {
     })
   }, [geoLevel, regions, departments])
 
-  // ── Cross-comparison: chosen layers for selected zones ──────────────
-  const crossStats = useMemo(() => {
-    if (!crossMode || selectedZones.length === 0 || crossLayers.length === 0) return null
-    const dataMap: Record<DataLayer, Record<string, number>> = {
-      population: popByRegion,
-      health: healthByRegion,
-      indicators: indicatorByRegion,
-      economy: gdpByRegion,
-      none: {},
+  // ── Cross-comparison: appelle le vrai moteur de croisement backend ───
+  // (RF-18 à RF-21 -- plus de recalcul côté client, voir
+  // backend/app/services/crossing/engine.py)
+  const [crossResult, setCrossResult] = useState<CrossingRunResult | null>(null)
+  const [crossLoading, setCrossLoading] = useState(false)
+  const [crossError, setCrossError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!crossMode || selectedZones.length === 0 || crossLayers.length < 2) {
+      setCrossResult(null)
+      setCrossError(null)
+      return
     }
+    let cancelled = false
+    setCrossLoading(true)
+    setCrossError(null)
+    api.runCrossing({ dataset_ids: crossLayers.map((l) => LAYER_TO_DATASET[l as Exclude<DataLayer, 'none'>]), dimension: 'region' })
+      .then((result) => { if (!cancelled) setCrossResult(result) })
+      .catch((err: unknown) => {
+        if (cancelled) return
+        setCrossResult(null)
+        setCrossError(err instanceof ApiError ? err.message : "Le croisement a échoué.")
+      })
+      .finally(() => { if (!cancelled) setCrossLoading(false) })
+    return () => { cancelled = true }
+  }, [crossMode, selectedZones, crossLayers, refreshKey])
+
+  // Ne garder, dans la réponse (qui porte sur les 14 régions), que les zones
+  // effectivement sélectionnées sur la carte.
+  const crossStats = useMemo(() => {
+    if (!crossResult) return null
     return selectedZones.map((name) => {
       const n = normalize(name)
-      const findVal = (data: Record<string, number>) => {
-        const key = Object.keys(data).find((k) => normalize(k) === n)
-        return key ? data[key] : 0
-      }
+      const zoneKey = Object.keys(crossResult.joined_table).find((k) => normalize(k) === n)
+      const values = zoneKey ? crossResult.joined_table[zoneKey] : {}
       const entry: Record<string, string | number> = { name }
       for (const layer of crossLayers) {
-        entry[layer] = findVal(dataMap[layer])
+        entry[layer] = values[LAYER_TO_DATASET[layer as Exclude<DataLayer, 'none'>]] ?? 0
       }
       return entry as { name: string } & Partial<Record<DataLayer, number>>
     })
-  }, [crossMode, selectedZones, crossLayers, popByRegion, healthByRegion, indicatorByRegion, gdpByRegion])
+  }, [crossResult, selectedZones, crossLayers])
+
+  const primaryIndicator = crossResult?.indicators?.[0] ?? null
+  const primaryIndicatorForSelection = useMemo(() => {
+    if (!primaryIndicator) return null
+    const selectedNorm = new Set(selectedZones.map(normalize))
+    const points = primaryIndicator.points.filter((p) => selectedNorm.has(normalize(p.zone)))
+    return points.length > 0 ? { ...primaryIndicator, points } : null
+  }, [primaryIndicator, selectedZones])
 
 
   // ── Handlers ───────────────────────────────────────────────────────
@@ -844,8 +880,8 @@ export function SenegalMap() {
             )}
           </div>
 
-          {/* Cross-data comparison */}
-          {crossStats && crossStats.length > 0 && (
+          {/* Cross-data comparison -- résultats du vrai moteur de croisement backend */}
+          {crossMode && selectedZones.length > 0 && crossLayers.length >= 2 && (
             <Card className="shadow-md">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
@@ -856,95 +892,85 @@ export function SenegalMap() {
                   {crossLayers.map((l) => (
                     <Badge key={l} variant="outline" className={`text-[9px] ${layerColor[l]}`}>{layerLabel[l]}</Badge>
                   ))}
-                  {crossLayers.length >= 2 && (
-                    <Badge variant="teal" className="text-[9px]">× {crossLayers.length} croisés</Badge>
-                  )}
+                  <Badge variant="teal" className="text-[9px]">× {crossLayers.length} croisés</Badge>
                 </div>
               </CardHeader>
               <CardContent>
-                {/* Zone cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {crossStats.map((stat) => {
-                    // Use first selected layer for bar height
-                    const primaryVal = (stat as any)[crossLayers[0]] ?? 0
-                    const maxPrimary = Math.max(...crossStats.map((s) => (s as any)[crossLayers[0]] ?? 0))
-                    const ratio = maxPrimary > 0 ? primaryVal / maxPrimary : 0
-                    return (
-                      <div key={stat.name} className="relative p-3 rounded-lg bg-[var(--color-lightbg)] overflow-hidden">
-                        <div className="absolute bottom-0 left-0 right-0 opacity-10 rounded-b-lg" style={{ height: `${Math.max(ratio * 100, 8)}%`, background: PALETTES[crossLayers[0]][3] }} />
-                        <p className="text-xs font-medium text-[var(--color-navy)] relative">{stat.name}</p>
-                        <div className="mt-1 space-y-0.5 relative">
-                          {crossLayers.map((layer) => {
-                            const val = (stat as any)[layer] ?? 0
-                            return (
-                              <div key={layer} className="flex items-center justify-between text-[11px]">
-                                <span className={layerColor[layer]}>{layerLabel[layer].slice(0, 4)}</span>
-                                <span className="font-semibold">
-                                  {layer === 'economy' ? val.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : layer === 'indicators' ? val.toFixed(1) : Math.round(val).toLocaleString('fr-FR')}
-                                  <span className="text-[9px] opacity-50 ml-0.5">{layerUnit[layer]}</span>
-                                </span>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {/* Auto-generated insight */}
-                {crossStats.length >= 2 && crossLayers.length >= 2 && (
-                  <div className="mt-3 p-2.5 rounded-lg bg-[var(--color-navy)] text-white text-xs leading-relaxed">
-                    {(() => {
-                      const a = crossLayers[0]
-                      const b = crossLayers[1]
-                      const sortedA = [...crossStats].sort((x, y) => ((y as any)[a] ?? 0) - ((x as any)[a] ?? 0))
-                      const sortedB = [...crossStats].sort((x, y) => ((y as any)[b] ?? 0) - ((x as any)[b] ?? 0))
-                      const topA = sortedA[0]
-                      const topB = sortedB[0]
-                      const valA = (topA as any)[a] ?? 0
-                      const valB = (topB as any)[b] ?? 0
-                      return (
-                        <span>
-                          <strong>{topA.name}</strong> mène en <span className={layerColor[a]}>{layerLabel[a]}</span> ({formatVal(valA)} {layerUnit[a]}).
-                          {' '}<strong>{topB.name}</strong> mène en <span className={layerColor[b]}>{layerLabel[b]}</span> ({formatVal(valB)} {layerUnit[b]}).
-                          {topA.name !== topB.name
-                            ? <> Les deux leaders sont <strong>différents</strong> — asymétrie à analyser.</>
-                            : <> <strong>{topA.name}</strong> domine sur les deux axes.</>
-                          }
-                        </span>
-                      )
-                    })()}
-                  </div>
+                {crossLoading && (
+                  <p className="text-xs text-[var(--color-grey)] flex items-center gap-1.5">
+                    <RefreshCw className="h-3 w-3 animate-spin" />Croisement en cours…
+                  </p>
+                )}
+                {crossError && (
+                  <p className="text-xs text-red-600">{crossError}</p>
                 )}
 
-                {/* 2-layer ratio bar */}
-                {crossStats.length >= 2 && crossLayers.length === 2 && (
-                  <div className="mt-3">
-                    <p className="text-[10px] text-[var(--color-grey)] mb-1.5 font-medium">Ratio {layerLabel[crossLayers[0]]} / {layerLabel[crossLayers[1]]} par zone</p>
-                    <div className="space-y-1">
+                {crossStats && !crossLoading && !crossError && (
+                  <>
+                    {/* Zone cards -- valeurs brutes par jeu de données */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {crossStats.map((stat) => {
-                        const v1 = (stat as any)[crossLayers[0]] ?? 0
-                        const v2 = (stat as any)[crossLayers[1]] ?? 1
-                        const r = v1 / (v2 || 1)
-                        const maxR = Math.max(...crossStats.map((s) => {
-                          const sv1 = (s as any)[crossLayers[0]] ?? 0
-                          const sv2 = (s as any)[crossLayers[1]] ?? 1
-                          return sv1 / (sv2 || 1)
-                        }))
-                        const barWidth = maxR > 0 ? (r / maxR) * 100 : 0
+                        const primaryVal = (stat as any)[crossLayers[0]] ?? 0
+                        const maxPrimary = Math.max(...crossStats.map((s) => (s as any)[crossLayers[0]] ?? 0))
+                        const ratio = maxPrimary > 0 ? primaryVal / maxPrimary : 0
                         return (
-                          <div key={stat.name} className="flex items-center gap-2 text-[11px]">
-                            <span className="w-24 text-right truncate text-[var(--color-navy)]">{stat.name}</span>
-                            <div className="flex-1 h-3 bg-[var(--color-lightbg)] rounded-full overflow-hidden">
-                              <div className="h-full rounded-full" style={{ width: `${barWidth}%`, background: PALETTES[crossLayers[0]][2] }} />
+                          <div key={stat.name} className="relative p-3 rounded-lg bg-[var(--color-lightbg)] overflow-hidden">
+                            <div className="absolute bottom-0 left-0 right-0 opacity-10 rounded-b-lg" style={{ height: `${Math.max(ratio * 100, 8)}%`, background: PALETTES[crossLayers[0]][3] }} />
+                            <p className="text-xs font-medium text-[var(--color-navy)] relative">{stat.name}</p>
+                            <div className="mt-1 space-y-0.5 relative">
+                              {crossLayers.map((layer) => {
+                                const val = (stat as any)[layer] ?? 0
+                                return (
+                                  <div key={layer} className="flex items-center justify-between text-[11px]">
+                                    <span className={layerColor[layer]}>{layerLabel[layer].slice(0, 4)}</span>
+                                    <span className="font-semibold">
+                                      {layer === 'economy' ? val.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) : layer === 'indicators' ? val.toFixed(1) : Math.round(val).toLocaleString('fr-FR')}
+                                      <span className="text-[9px] opacity-50 ml-0.5">{layerUnit[layer]}</span>
+                                    </span>
+                                  </div>
+                                )
+                              })}
                             </div>
-                            <span className="w-12 text-right font-mono font-semibold text-[var(--color-navy)]">{r.toFixed(1)}</span>
                           </div>
                         )
                       })}
                     </div>
-                  </div>
+
+                    {/* Interprétation générée par le moteur (RF-21) -- jamais recalculée côté client */}
+                    {crossResult && (
+                      <div className="mt-3 p-2.5 rounded-lg bg-[var(--color-navy)] text-white text-xs leading-relaxed">
+                        {crossResult.interpretation}
+                      </div>
+                    )}
+
+                    {/* Indicateur nommé généré par le moteur (recette sémantique si reconnue, ex. densité) */}
+                    {primaryIndicatorForSelection && (
+                      <div className="mt-3">
+                        <p className="text-[10px] text-[var(--color-grey)] mb-1.5 font-medium">
+                          {primaryIndicatorForSelection.label} par zone
+                          {primaryIndicatorForSelection.recipe_slug && (
+                            <span className="ml-1.5 text-[var(--color-teal)]">· indicateur reconnu automatiquement</span>
+                          )}
+                        </p>
+                        <div className="space-y-1">
+                          {(() => {
+                            const maxR = Math.max(...primaryIndicatorForSelection.points.map((p) => p.value))
+                            return primaryIndicatorForSelection.points.map((p) => (
+                              <div key={p.zone} className="flex items-center gap-2 text-[11px]">
+                                <span className="w-24 text-right truncate text-[var(--color-navy)]">{p.zone}</span>
+                                <div className="flex-1 h-3 bg-[var(--color-lightbg)] rounded-full overflow-hidden">
+                                  <div className="h-full rounded-full" style={{ width: `${maxR > 0 ? (p.value / maxR) * 100 : 0}%`, background: PALETTES[crossLayers[0]][2] }} />
+                                </div>
+                                <span className="w-20 text-right font-mono font-semibold text-[var(--color-navy)]">
+                                  {p.value.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} <span className="opacity-50">{primaryIndicatorForSelection.unit}</span>
+                                </span>
+                              </div>
+                            ))
+                          })()}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>

@@ -1,11 +1,9 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { HomePage } from './pages/HomePage'
 import { CatalogPage } from './pages/CatalogPage'
-import { HealthDashboardPage } from './pages/HealthDashboardPage'
-import { TradeDashboardPage } from './pages/TradeDashboardPage'
-import { PopulationDashboardPage } from './pages/PopulationDashboardPage'
-import { EconomyDashboardPage } from './pages/EconomyDashboardPage'
+import { DashboardsPage } from './pages/DashboardsPage'
+import { CrossingPage } from './pages/CrossingPage'
 import { AssistantPage } from './pages/AssistantPage'
 import MapPage from './pages/MapPage'
 
@@ -16,10 +14,9 @@ function App() {
         <Route index element={<HomePage />} />
         <Route path="catalogue" element={<CatalogPage />} />
         <Route path="carte" element={<MapPage />} />
-        <Route path="tableaux-de-bord/population" element={<PopulationDashboardPage />} />
-        <Route path="tableaux-de-bord/economie" element={<EconomyDashboardPage />} />
-        <Route path="tableaux-de-bord/sante" element={<HealthDashboardPage />} />
-        <Route path="tableaux-de-bord/commerce" element={<TradeDashboardPage />} />
+        <Route path="tableaux-de-bord" element={<Navigate to="/tableaux-de-bord/population" replace />} />
+        <Route path="tableaux-de-bord/:domain" element={<DashboardsPage />} />
+        <Route path="croisement" element={<CrossingPage />} />
         <Route path="assistant" element={<AssistantPage />} />
       </Route>
     </Routes>

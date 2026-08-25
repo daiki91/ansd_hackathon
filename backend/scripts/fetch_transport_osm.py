@@ -6,6 +6,8 @@ et génère des GeoJSON légers pour la carte :
 """
 import sys
 import json
+import time
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -14,14 +16,35 @@ sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 OUT = Path(r'C:\Users\Birame\ansd_hackathon\frontend\public\geo')
 OUT.mkdir(parents=True, exist_ok=True)
 
-OVERPASS = 'https://overpass-api.de/api/interpreter'
+# Miroirs Overpass : le principal est souvent saturé (504)
+OVERPASS_ENDPOINTS = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://overpass.private.coffee/api/interpreter',
+]
+
+FORCE = '--force' in sys.argv
+
+NEEDED = ['transport_roads.geojson', 'transport_railways.geojson', 'transport_points.geojson']
+if not FORCE and all((OUT / f).exists() and (OUT / f).stat().st_size > 5000 for f in NEEDED):
+    print('GeoJSON transport déjà présents — téléchargement ignoré (--force pour re-télécharger).')
+    sys.exit(0)
 
 
 def overpass(query):
     data = urllib.parse.urlencode({'data': query}).encode()
-    req = urllib.request.Request(OVERPASS, data=data, headers={'User-Agent': 'DataLink/1.0'})
-    with urllib.request.urlopen(req, timeout=300) as r:
-        return json.loads(r.read().decode())
+    last_err = None
+    for ep in OVERPASS_ENDPOINTS:
+        for attempt in range(2):
+            try:
+                req = urllib.request.Request(ep, data=data, headers={'User-Agent': 'DataLink/1.0'})
+                with urllib.request.urlopen(req, timeout=300) as r:
+                    return json.loads(r.read().decode())
+            except Exception as e:
+                last_err = e
+                print(f'  [{ep.split("/")[2]}] tentative {attempt + 1} échouée : {e}')
+                time.sleep(3)
+    raise RuntimeError(f'Tous les miroirs Overpass ont échoué : {last_err}')
 
 
 def rnd(c):

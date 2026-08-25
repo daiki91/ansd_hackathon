@@ -42,11 +42,14 @@ region,count,share_pct,year,source
 """)
     w = csv.writer(fp)
     w.writerow(['National', national, '', 2023, 'ANSD (RGPH-5, 2023)'])
+    def display_name(n):
+        # tolère les deux formats : 'DAKAR' ou déjà normalisé 'Dakar'
+        return NAME_MAP.get(n) or NAME_MAP.get(n.upper()) or n
     for name, val in sorted(data, key=lambda x: -x[1]):
         share = round(val * 100.0 / national, 1)
-        w.writerow([NAME_MAP.get(name, name), val, share, 2023,
+        w.writerow([display_name(name), val, share, 2023,
                     'ANSD (RGPH-5 2023 via Projections 2023-2050)'])
 
 print(f'OK -> {out}')
 for name, val in sorted(data, key=lambda x: -x[1])[:5]:
-    print(f'  {NAME_MAP[name]}: {val:,}')
+    print(f'  {display_name(name)}: {val:,}')

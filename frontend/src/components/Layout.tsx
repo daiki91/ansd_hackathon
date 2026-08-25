@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { ChatBot } from './ChatBot'
 import './Layout.css'
 
 const NAV_LINKS = [
@@ -8,6 +9,7 @@ const NAV_LINKS = [
   { to: '/tableaux-de-bord/economie', label: 'Économie' },
   { to: '/tableaux-de-bord/sante', label: 'Santé' },
   { to: '/tableaux-de-bord/commerce', label: 'Commerce extérieur' },
+  { to: '/assistant', label: '🤖 Assistant IA' },
 ]
 
 export function Layout() {
@@ -44,6 +46,8 @@ export function Layout() {
           statistiques du Sénégal, basée sur les jeux de données ouvertes de l'ANSD.
         </p>
       </footer>
+
+      <ChatBot />
     </div>
   )
 }

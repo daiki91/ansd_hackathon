@@ -5,6 +5,11 @@ import './pages.css'
 
 const QUICK_LINKS = [
   {
+    to: '/assistant',
+    title: '🤖 Assistant IA',
+    description: 'Posez vos questions en langage naturel sur les données statistiques du Sénégal. Upload de PDF supporté.',
+  },
+  {
     to: '/catalogue',
     title: 'Catalogue de données',
     description: "Explorez les jeux de données référencés, leurs métadonnées et téléchargez-les (CSV, Excel, JSON).",

@@ -6,6 +6,7 @@ import { HealthDashboardPage } from './pages/HealthDashboardPage'
 import { TradeDashboardPage } from './pages/TradeDashboardPage'
 import { PopulationDashboardPage } from './pages/PopulationDashboardPage'
 import { EconomyDashboardPage } from './pages/EconomyDashboardPage'
+import { AssistantPage } from './pages/AssistantPage'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="tableaux-de-bord/economie" element={<EconomyDashboardPage />} />
         <Route path="tableaux-de-bord/sante" element={<HealthDashboardPage />} />
         <Route path="tableaux-de-bord/commerce" element={<TradeDashboardPage />} />
+        <Route path="assistant" element={<AssistantPage />} />
       </Route>
     </Routes>
   )

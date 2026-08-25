@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     API_KEYS: str = ""
     REQUIRE_API_KEY: bool = False
 
+    # Anthropic Claude API (pour le chatbot RAG)
+    ANTHROPIC_API_KEY: str = ""
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]

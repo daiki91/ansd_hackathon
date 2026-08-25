@@ -4,39 +4,70 @@ Plateforme intelligente de visualisation, d'analyse, de croisement et de valoris
 
 > « Connecter les données pour révéler l'information. »
 
-Le cahier des charges complet du projet (contexte, objectifs, exigences fonctionnelles et non fonctionnelles, architecture technique, cas d'usage) est disponible dans [`cahier_des_charges.pdf`](./cahier_des_charges.pdf) (source LaTeX : [`cahier_des_charges.tex`](./cahier_des_charges.tex)).
+Le cahier des charges complet du projet est disponible dans [`cahier_des_charges.pdf`](./cahier_des_charges.pdf).
+
+## Stack technique
+
+| Couche | Technologies |
+|---|---|
+| Frontend | React 19, TypeScript, Vite, Recharts, React Router |
+| Backend | Python, FastAPI, SQLAlchemy, Pydantic |
+| Base de données | SQLite (dev) / Supabase PostgreSQL + PostGIS (prod) |
+| IA / RAG | LangChain, Anthropic Claude, ChromaDB, HuggingFace Embeddings |
+| PDF Parsing | PyPDF (via LangChain) |
+| Embeddings | all-MiniLM-L6-v2 (sentence-transformers, local, gratuit) |
 
 ## Structure du dépôt
 
 ```
 ansd_hackathon/
-  cahier_des_charges.pdf   # spécifications complètes du projet
-  cahier_des_charges.tex   # source LaTeX du cahier des charges
-  backend/                 # API FastAPI (Python)
-  frontend/                # application web React (Vite + TypeScript)
+  cahier_des_charges.pdf     # spécifications complètes du projet
+  cahier_des_charges.tex     # source LaTeX du cahier des charges
+  backend/                   # API FastAPI (Python)
+    app/
+      core/config.py         # configuration centralisée
+      db/                    # session & base de données
+      models/                # modèles SQLAlchemy
+      routers/               # routes API (catalogue, données, chat)
+      schemas/               # schémas Pydantic
+      services/
+        export.py            # export CSV/Excel/JSON
+        rag/                 # module RAG (LangChain)
+          pipeline.py        # ingestion, retrieval, génération
+    scripts/ingest.py        # ingestion des données d'amorçage
+    chroma_db/               # base vectorielle persistante
+    data/                    # données sources (CSV)
+  frontend/                  # application React (Vite + TypeScript)
+    src/
+      components/            # Layout, StatCard, ChatBot
+      pages/                 # Accueil, Catalogue, Dashboards, Assistant
+      api/                   # client HTTP, types TypeScript
 ```
 
 ## Démarrage rapide
 
-L'application se lance en deux serveurs séparés, à faire tourner en parallèle dans deux terminaux.
+L'application se lance en deux serveurs séparés.
 
-### Backend (FastAPI)
+### 1. Backend (FastAPI)
 
 ```bash
 cd backend
-python -m venv venv          # déjà fait si le dossier venv/ existe
+python -m venv venv
 # Windows : venv\Scripts\activate
 # macOS/Linux : source venv/bin/activate
 pip install -r requirements.txt
 
-cp .env.example .env         # adapter au besoin
-python -m scripts.ingest     # charge les données d'amorçage en base
+cp .env.example .env
+# Ajouter votre clé API Anthropic dans .env :
+# ANTHROPIC_API_KEY=sk-ant-xxxxx
+
+python -m scripts.ingest     # charge les données d'amorçage
 uvicorn app.main:app --reload
 ```
 
-API disponible sur `http://localhost:8000`, documentation interactive sur `http://localhost:8000/docs`. Détails complets : [`backend/README.md`](./backend/README.md).
+API sur `http://localhost:8000` — documentation interactive sur `http://localhost:8000/docs`.
 
-### Frontend (React + Vite)
+### 2. Frontend (React + Vite)
 
 ```bash
 cd frontend
@@ -44,32 +75,97 @@ npm install
 npm run dev
 ```
 
-Application disponible sur `http://localhost:5173`, déjà configurée pour appeler le backend local (CORS et URL d'API préconfigurés).
+Application sur `http://localhost:5173`.
+
+### 3. Assistant IA
+
+L'assistant est accessible :
+- En **bulle flottante** (bouton 💬 en bas à droite) sur toutes les pages
+- En **page dédiée** sur `/assistant`
+
+Pour enrichir la base de connaissances, uploadez des PDFs directement depuis le chat ou via l'API :
+
+```bash
+# Upload d'un PDF
+curl -X POST http://localhost:8000/api/v1/chat/ingest/pdf \
+  -F "file=@rapport_ansd_2024.pdf" \
+  -F "source_name=ANSD Rapport 2024"
+
+# Ingestion de texte brut
+curl -X POST http://localhost:8000/api/v1/chat/ingest \
+  -H "Content-Type: application/json" \
+  -d '{"text": "La population du Sénégal est de 18.126.390 habitants...", "source_name": "RGPH-5"}'
+```
+
+## Endpoints API
+
+### Données
+
+| Méthode | Route | Description |
+|---|---|---|
+| `GET` | `/api/v1/catalog` | Liste des jeux de données |
+| `GET` | `/api/v1/catalog/{id}` | Détail d'un jeu de données |
+| `GET` | `/api/v1/catalog/{id}/download` | Téléchargement CSV/Excel/JSON |
+| `GET` | `/api/v1/population` | Données population par région |
+| `GET` | `/api/v1/indicators` | Indicateurs économiques/démographiques |
+| `GET` | `/api/v1/health-establishments` | Établissements de santé |
+| `GET` | `GET /api/v1/trade` | Flux commerciaux imports/exports |
+
+### Assistant IA (RAG)
+
+| Méthode | Route | Description |
+|---|---|---|
+| `POST` | `/api/v1/chat` | Poser une question (réponse complète) |
+| `POST` | `/api/v1/chat/stream` | Poser une question (streaming SSE) |
+| `POST` | `/api/v1/chat/ingest` | Ingestion de texte brut |
+| `POST` | `/api/v1/chat/ingest/pdf` | Upload et ingestion d'un PDF |
+| `GET` | `/api/v1/chat/stats` | Statistiques de la base vectorielle |
+
+## Architecture RAG
+
+```
+PDF/Texte
+  ↓ PyPDFLoader (LangChain)
+Extraction du texte
+  ↓ RecursiveCharacterTextSplitter (1000 chars, overlap 200)
+Découpage en chunks
+  ↓ HuggingFace Embeddings (all-MiniLM-L6-v2)
+Vecteurs 384 dimensions
+  ↓ ChromaDB (FAISS en interne)
+Base vectorielle persistante
+  ↓ Retriever (cosine similarity, top-k)
+Chunks pertinents
+  ↓ ChatPromptTemplate + Claude (claude-sonnet-4-20250514)
+Réponse contextuelle et sourcée
+```
 
 ## État d'avancement
 
 ### Backend
-
-Squelette FastAPI fonctionnel, avec base de données Supabase (PostgreSQL) en cible et SQLite en développement local. Endpoints disponibles :
-
-| Domaine | Route | Exigence couverte |
-|---|---|---|
-| Catalogue de données | `GET /api/v1/catalog`, `/{id}`, `/{id}/download` | RF-14, RF-17 |
-| Santé | `GET /api/v1/health-establishments` | RF-02 |
-| Commerce extérieur | `GET /api/v1/trade` | RF-02 |
-| Population | `GET /api/v1/population` | RF-02 |
-| Indicateurs (Économie, Population) | `GET /api/v1/indicators` | RF-13 |
-
-Restent à implémenter : moteur de croisement (RF-18 à RF-21), recherche en langage naturel et assistant IA (RF-06, RF-07), cartographie interactive (RF-03), authentification par rôle (RF-01, RNF-01), interopérabilité SDMX (RF-16).
+- [x] API FastAPI avec endpoints données (catalogue, santé, commerce, population, indicateurs)
+- [x] Assistant IA avec RAG (LangChain + Claude + ChromaDB)
+- [x] Upload PDF avec ingestion automatique
+- [x] Streaming des réponses en temps réel
+- [x] Export CSV/Excel/JSON
+- [ ] Moteur de croisement de données (RF-18 à RF-21)
+- [ ] Authentification par rôle (RF-01, RNF-01)
+- [ ] Cartographie interactive (RF-03)
+- [ ] Interopérabilité SDMX (RF-16)
 
 ### Frontend
-
-Application React avec navigation (Accueil, Catalogue de données, tableaux de bord Population / Économie / Santé / Commerce extérieur), connectée en direct à l'API backend, avec graphiques (Recharts) et export des jeux de données (CSV/Excel/JSON).
+- [x] Navigation multi-pages (Accueil, Catalogue, 4 Dashboards)
+- [x] Graphiques interactifs (Recharts)
+- [x] ChatBot avec streaming, upload PDF, suggestions
+- [x] Page dédiée Assistant IA (`/assistant`)
+- [ ] Cartographie interactive (Leaflet/MapLibre)
+- [ ] Comparaison régionale/temporelle
+- [ ] Export PDF des rapports
 
 ### Données
-
-Les données intégrées sont **réelles et sourcées** (ANSD, Ministère de la Santé, Direction générale du Trésor français citant l'ANSD), mais encore partielles — voir la section « À propos des données » de [`backend/README.md`](./backend/README.md) pour le détail des sources utilisées, celles qui restent inaccessibles depuis cet environnement (Open Data for Africa, ANADS, Stats Sénégal), et comment les compléter.
+- [x] 4 jeux de données référencés (santé, commerce, population, indicateurs)
+- [x] Données réelles et sourcées (ANSD, MSAS, DG Trésor)
+- [ ] Extension des sources (Open Data Sénégal, ANADS, Stats Sénégal)
 
 ## Équipe
 
-Voir la section « Équipe projet et rôles » du cahier des charges pour la répartition des rôles (Backend/Data Engineer, Frontend, Data Scientist, Data Analyst/GIS, Product/UX).
+Voir la section « Équipe projet et rôles » du cahier des charges pour la répartition des rôles.

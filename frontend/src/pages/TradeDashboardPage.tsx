@@ -4,8 +4,9 @@ import { api } from '../api/client'
 import { useApiData } from '../hooks/useApiData'
 import { StateMessage } from '../components/StateMessage'
 import { StatCard } from '../components/StatCard'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Globe } from 'lucide-react'
 import type { TradeFlowType } from '../api/types'
-import './pages.css'
 
 const FLOW_LABELS: Record<TradeFlowType, string> = {
   export: 'Exportations',
@@ -30,31 +31,37 @@ export function TradeDashboardPage() {
   )
 
   return (
-    <div>
-      <div className="page-header">
-        <h1>Tableau de bord — Commerce extérieur</h1>
-        <p>
-          Exportations et importations du Sénégal par pays partenaire (RF-02, domaine « Commerce extérieur »
-          du cahier des charges).
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-[var(--color-navy)] flex items-center gap-2">
+          <Globe className="h-8 w-8 text-[var(--color-teal)]" />
+          Tableau de bord — Commerce extérieur
+        </h1>
+        <p className="text-[var(--color-grey)] mt-1">
+          Exportations et importations du Sénégal par pays partenaire.
         </p>
       </div>
 
-      {loading ? <StateMessage kind="loading" message="Chargement des données commerciales…" /> : null}
-      {error ? <StateMessage kind="error" message={error} /> : null}
+      {loading && <StateMessage kind="loading" message="Chargement des données commerciales…" />}
+      {error && <StateMessage kind="error" message={error} />}
 
-      {rows ? (
+      {rows && (
         <>
-          <div className="filter-bar">
-            <label>
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-medium text-[var(--color-navy)]">
               Flux
-              <select value={flowType} onChange={(event) => setFlowType(event.target.value as TradeFlowType)}>
-                <option value="export">Exportations</option>
-                <option value="import">Importations</option>
-              </select>
             </label>
+            <select
+              value={flowType}
+              onChange={(event) => setFlowType(event.target.value as TradeFlowType)}
+              className="h-10 rounded-md border border-input bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-teal)]"
+            >
+              <option value="export">Exportations</option>
+              <option value="import">Importations</option>
+            </select>
           </div>
 
-          <div className="stat-row">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <StatCard
               label={`${FLOW_LABELS[flowType]} totales (${total?.year ?? '—'})`}
               value={total?.value_fcfa_billions ? `${total.value_fcfa_billions.toLocaleString('fr-FR')} Mds FCFA` : '—'}
@@ -63,14 +70,16 @@ export function TradeDashboardPage() {
             <StatCard label="Pays partenaires suivis" value={countryRows.length} accent="gold" />
           </div>
 
-          <section className="section">
-            <h2>
-              Principaux pays partenaires — {FLOW_LABELS[flowType]} ({total?.year ?? ''})
-            </h2>
-            {chartData.length === 0 ? (
-              <StateMessage kind="empty" message="Aucune donnée disponible pour ce flux." />
-            ) : (
-              <div className="chart-panel">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">
+                Principaux pays partenaires — {FLOW_LABELS[flowType]} ({total?.year ?? ''})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {chartData.length === 0 ? (
+                <StateMessage kind="empty" message="Aucune donnée disponible pour ce flux." />
+              ) : (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={chartData} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -85,41 +94,48 @@ export function TradeDashboardPage() {
                     />
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
-            )}
-          </section>
+              )}
+            </CardContent>
+          </Card>
 
-          <section className="section">
-            <h2>Détail des données</h2>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Pays</th>
-                  <th>Part (%)</th>
-                  <th>Valeur (Mds FCFA)</th>
-                  <th>Année</th>
-                  <th>Source</th>
-                </tr>
-              </thead>
-              <tbody>
-                {flowRows.map((row) => (
-                  <tr key={row.id}>
-                    <td>{row.country}</td>
-                    <td>{row.share_pct !== null ? `${row.share_pct.toLocaleString('fr-FR')} %` : '—'}</td>
-                    <td>{row.value_fcfa_billions !== null ? row.value_fcfa_billions.toLocaleString('fr-FR') : '—'}</td>
-                    <td>{row.year}</td>
-                    <td>{row.source}</td>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Détail des données</CardTitle>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left">
+                    <th className="py-2 px-3 font-semibold text-[var(--color-navy)]">Pays</th>
+                    <th className="py-2 px-3 font-semibold text-[var(--color-navy)]">Part (%)</th>
+                    <th className="py-2 px-3 font-semibold text-[var(--color-navy)]">Valeur (Mds FCFA)</th>
+                    <th className="py-2 px-3 font-semibold text-[var(--color-navy)]">Année</th>
+                    <th className="py-2 px-3 font-semibold text-[var(--color-navy)]">Source</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            <p className="source-note">
-              Les valeurs par pays sont calculées à partir des parts (%) publiées par la source et du total
-              national de l'année — voir le catalogue de données pour le détail des sources et leurs limites.
-            </p>
-          </section>
+                </thead>
+                <tbody>
+                  {flowRows.map((row) => (
+                    <tr key={row.id} className="border-b last:border-0 hover:bg-[var(--color-lightbg)]">
+                      <td className="py-2 px-3">{row.country}</td>
+                      <td className="py-2 px-3">
+                        {row.share_pct !== null ? `${row.share_pct.toLocaleString('fr-FR')} %` : '—'}
+                      </td>
+                      <td className="py-2 px-3">
+                        {row.value_fcfa_billions !== null ? row.value_fcfa_billions.toLocaleString('fr-FR') : '—'}
+                      </td>
+                      <td className="py-2 px-3">{row.year}</td>
+                      <td className="py-2 px-3 text-xs text-[var(--color-grey)]">{row.source}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="text-xs text-[var(--color-grey)] mt-3">
+                Les valeurs par pays sont calculées à partir des parts (%) publiées par la source et du total national.
+              </p>
+            </CardContent>
+          </Card>
         </>
-      ) : null}
+      )}
     </div>
   )
 }

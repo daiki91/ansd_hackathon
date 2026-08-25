@@ -1,53 +1,58 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { ChatBot } from './ChatBot'
-import './Layout.css'
+import { LayoutDashboard, Database, Map, Users, TrendingUp, HeartPulse, Globe, Bot } from 'lucide-react'
 
 const NAV_LINKS = [
-  { to: '/', label: 'Accueil', end: true },
-  { to: '/catalogue', label: 'Catalogue de données' },
-  { to: '/tableaux-de-bord/population', label: 'Population' },
-  { to: '/tableaux-de-bord/economie', label: 'Économie' },
-  { to: '/tableaux-de-bord/sante', label: 'Santé' },
-  { to: '/tableaux-de-bord/commerce', label: 'Commerce extérieur' },
-  { to: '/assistant', label: '🤖 Assistant IA' },
+  { to: '/', label: 'Accueil', icon: LayoutDashboard, end: true },
+  { to: '/catalogue', label: 'Catalogue', icon: Database },
+  { to: '/carte', label: 'Carte', icon: Map },
+  { to: '/tableaux-de-bord/population', label: 'Population', icon: Users },
+  { to: '/tableaux-de-bord/economie', label: 'Économie', icon: TrendingUp },
+  { to: '/tableaux-de-bord/sante', label: 'Santé', icon: HeartPulse },
+  { to: '/tableaux-de-bord/commerce', label: 'Commerce', icon: Globe },
+  { to: '/assistant', label: 'Assistant IA', icon: Bot },
 ]
 
 export function Layout() {
   return (
-    <div className="layout">
-      <header className="layout__header">
-        <div className="layout__header-inner">
-          <NavLink to="/" className="layout__brand">
-            <span className="layout__brand-mark">DATA LINK</span>
-            <span className="layout__brand-tagline">Données statistiques du Sénégal</span>
-          </NavLink>
-          <nav className="layout__nav">
-            {NAV_LINKS.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.end}
-                className={({ isActive }) => 'layout__nav-link' + (isActive ? ' layout__nav-link--active' : '')}
-              >
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
+    <div className="min-h-screen flex flex-col bg-[var(--color-lightbg)]">
+      <header className="bg-[var(--color-navy)] text-white shadow-md sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <NavLink to="/" className="flex items-center gap-3 no-underline">
+              <span className="text-xl font-bold tracking-tight text-white">DATA LINK</span>
+              <span className="hidden sm:inline text-xs text-white/60">Données statistiques du Sénégal</span>
+            </NavLink>
+            <nav className="flex items-center gap-1">
+              {NAV_LINKS.map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  end={link.end}
+                  className={({ isActive }) =>
+                    `flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors no-underline ${
+                      isActive
+                        ? 'bg-white/15 text-white'
+                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                    }`
+                  }
+                >
+                  <link.icon className="h-4 w-4" />
+                  <span className="hidden md:inline">{link.label}</span>
+                </NavLink>
+              ))}
+            </nav>
+          </div>
         </div>
       </header>
 
-      <main className="layout__main">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         <Outlet />
       </main>
 
-      <footer className="layout__footer">
-        <p>
-          DATA LINK — Plateforme intelligente de visualisation, d'analyse et de valorisation des données
-          statistiques du Sénégal, basée sur les jeux de données ouvertes de l'ANSD.
-        </p>
+      <footer className="bg-[var(--color-navy)] text-white/50 text-xs py-4 text-center">
+        DATA LINK — Plateforme intelligente de visualisation, d'analyse et de valorisation des données
+        statistiques du Sénégal, basée sur les jeux de données ouvertes de l'ANSD.
       </footer>
-
-      <ChatBot />
     </div>
   )
 }

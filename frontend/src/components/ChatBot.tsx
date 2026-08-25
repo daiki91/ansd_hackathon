@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import './ChatBot.css'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Send, Paperclip, BarChart3, Bot, FileText } from 'lucide-react'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -16,11 +18,7 @@ const SUGGESTIONS = [
   "Compare la santé entre Dakar et Thiès",
 ]
 
-interface ChatBotProps {
-  embedded?: boolean
-}
-
-export function ChatBot({ embedded = false }: ChatBotProps) {
+export function ChatBot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -31,7 +29,6 @@ export function ChatBot({ embedded = false }: ChatBotProps) {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const [isOpen, setIsOpen] = useState(false)
   const [ragStats, setRagStats] = useState({ total: 0, name: '' })
   const [showUpload, setShowUpload] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -120,7 +117,6 @@ export function ChatBot({ embedded = false }: ChatBotProps) {
         }
       }
 
-      // Update RAG stats after response
       fetch(`${apiBase}/api/v1/chat/stats`)
         .then((r) => r.json())
         .then((d) => setRagStats({ total: d.total_documents, name: d.collection_name }))
@@ -199,7 +195,6 @@ export function ChatBot({ embedded = false }: ChatBotProps) {
         },
       ])
 
-      // Update stats
       setRagStats((prev) => ({
         ...prev,
         total: prev.total + result.chunks_ingested,
@@ -225,7 +220,6 @@ export function ChatBot({ embedded = false }: ChatBotProps) {
   }
 
   const renderMarkdown = (text: string) => {
-    // Simple markdown: bold, code, line breaks
     return text
       .split('\n')
       .map((line, i) => {
@@ -242,56 +236,53 @@ export function ChatBot({ embedded = false }: ChatBotProps) {
   }
 
   const chatContent = (
-    <div className={`chatbot ${embedded ? 'chatbot--embedded' : ''}`}>
-      <div className="chatbot__header">
-        <div className="chatbot__header-info">
-          <span className="chatbot__title">DATA LINK Assistant</span>
-          <span className="chatbot__subtitle">
-            RAG powered by Claude
-            {ragStats.total > 0 && (
-              <span className="chatbot__stats-badge">
-                {ragStats.total} documents
-              </span>
-            )}
-          </span>
+    <div className="flex flex-col h-full bg-white rounded-xl border shadow-sm">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 bg-[var(--color-navy)] text-white rounded-t-xl">
+        <div className="flex items-center gap-2">
+          <Bot className="h-5 w-5" />
+          <div>
+            <span className="font-semibold text-sm">DATA LINK Assistant</span>
+            <div className="flex items-center gap-2 text-xs text-white/70">
+              <span>RAG powered by Claude</span>
+              {ragStats.total > 0 && (
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                  {ragStats.total} docs
+                </Badge>
+              )}
+            </div>
+          </div>
         </div>
-        {!embedded && (
-          <button
-            className="chatbot__close"
-            onClick={() => setIsOpen(false)}
-            aria-label="Fermer"
-          >
-            ✕
-          </button>
-        )}
       </div>
 
-      <div className="chatbot__messages">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg, i) => (
-          <div key={i} className={`chatbot__message chatbot__message--${msg.role}`}>
+          <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {msg.role === 'assistant' && (
-              <div className="chatbot__avatar">🤖</div>
-            )}
-            <div className="chatbot__message-body">
-              <div className="chatbot__message-content">
-                {renderMarkdown(msg.content)}
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-teal)] flex items-center justify-center">
+                <Bot className="h-4 w-4 text-white" />
               </div>
-              {msg.sources && msg.sources.length > 0 && (
-                <div className="chatbot__sources">
-                  📎 Sources : {msg.sources.join(', ')}
-                </div>
-              )}
+            )}
+            <div className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
+              msg.role === 'user'
+                ? 'bg-[var(--color-navy)] text-white'
+                : 'bg-[var(--color-lightbg)] text-[var(--color-navy)]'
+            }`}>
+              {renderMarkdown(msg.content)}
             </div>
           </div>
         ))}
         {(isLoading || isUploading) && (
-          <div className="chatbot__message chatbot__message--assistant">
-            <div className="chatbot__avatar">🤖</div>
-            <div className="chatbot__message-body">
-              <div className="chatbot__message-content chatbot__typing">
-                <span></span>
-                <span></span>
-                <span></span>
+          <div className="flex gap-2">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--color-teal)] flex items-center justify-center">
+              <Bot className="h-4 w-4 text-white" />
+            </div>
+            <div className="bg-[var(--color-lightbg)] rounded-lg px-3 py-2">
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-[var(--color-grey)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                <span className="w-2 h-2 bg-[var(--color-grey)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                <span className="w-2 h-2 bg-[var(--color-grey)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
               </div>
             </div>
           </div>
@@ -299,14 +290,15 @@ export function ChatBot({ embedded = false }: ChatBotProps) {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Suggestions */}
       {messages.length <= 1 && (
-        <div className="chatbot__suggestions">
-          <p className="chatbot__suggestions-title">Questions suggérées :</p>
-          <div className="chatbot__suggestions-list">
+        <div className="px-4 pb-2">
+          <p className="text-xs text-[var(--color-grey)] mb-2">Questions suggérées :</p>
+          <div className="flex flex-wrap gap-1.5">
             {SUGGESTIONS.map((q, i) => (
               <button
                 key={i}
-                className="chatbot__suggestion-chip"
+                className="text-xs px-2 py-1 rounded-full border border-[var(--color-teal)] text-[var(--color-teal)] hover:bg-[var(--color-teal)] hover:text-white transition-colors cursor-pointer"
                 onClick={() => sendMessage(q)}
                 disabled={isLoading}
               >
@@ -317,16 +309,21 @@ export function ChatBot({ embedded = false }: ChatBotProps) {
         </div>
       )}
 
-      <div className="chatbot__toolbar">
-        <button
-          className="chatbot__tool-btn"
+      {/* Toolbar */}
+      <div className="flex items-center gap-2 px-4 py-2 border-t">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
           onClick={() => setShowUpload(!showUpload)}
           title="Uploader un PDF"
         >
-          📎
-        </button>
-        <button
-          className="chatbot__tool-btn"
+          <Paperclip className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
           onClick={async () => {
             const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000'
             try {
@@ -351,83 +348,60 @@ export function ChatBot({ embedded = false }: ChatBotProps) {
           }}
           title="Stats base de données"
         >
-          📊
-        </button>
+          <BarChart3 className="h-4 w-4" />
+        </Button>
       </div>
 
+      {/* Upload panel */}
       {showUpload && (
-        <div className="chatbot__upload-panel">
-          <p>Choisissez un document PDF à ingérer :</p>
-          <button
-            className="chatbot__upload-btn"
+        <div className="px-4 py-3 border-t bg-[var(--color-lightbg)]">
+          <p className="text-xs text-[var(--color-grey)] mb-2">Choisissez un document PDF :</p>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
+            className="w-full"
           >
-            {isUploading ? '⏳ Upload en cours...' : '📁 Sélectionner un PDF'}
-          </button>
+            <FileText className="mr-2 h-4 w-4" />
+            {isUploading ? 'Upload en cours...' : 'Sélectionner un PDF'}
+          </Button>
           <input
             ref={fileInputRef}
             type="file"
             accept=".pdf"
             onChange={handleFileInput}
-            style={{ display: 'none' }}
+            className="hidden"
           />
         </div>
       )}
 
-      <div className="chatbot__input-area">
+      {/* Input */}
+      <div className="flex items-end gap-2 p-4 border-t">
         <textarea
           ref={textareaRef}
-          className="chatbot__input"
+          className="flex-1 resize-none rounded-lg border border-input bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-teal)] min-h-[40px] max-h-[120px]"
           value={input}
           onChange={(e) => {
             setInput(e.target.value)
             autoResize()
           }}
           onKeyDown={handleKeyDown}
-          placeholder="Posez votre question sur les données du Sénégal..."
+          placeholder="Posez votre question..."
           rows={1}
           disabled={isLoading || isUploading}
         />
-        <button
-          className="chatbot__send"
+        <Button
+          size="icon"
+          className="h-10 w-10 flex-shrink-0"
           onClick={() => sendMessage()}
           disabled={isLoading || isUploading || !input.trim()}
-          aria-label="Envoyer"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-        </button>
+          <Send className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   )
 
-  // Embedded mode: render chat directly (for the /assistant page)
-  if (embedded) return chatContent
-
-  // Floating bubble mode
-  return (
-    <>
-      <button
-        className="chatbot-toggle"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="Ouvrir l'assistant IA"
-      >
-        {isOpen ? (
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        ) : (
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-        )}
-      </button>
-
-      {isOpen && chatContent}
-    </>
-  )
+  return chatContent
 }

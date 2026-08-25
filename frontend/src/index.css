@@ -1,15 +1,15 @@
-/* Charte graphique DATA LINK -- reprend les couleurs du cahier des charges
-   (cahier_des_charges.tex : navy, teal, gold, grey, lightbg). */
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #1b3358;
+  --color-teal: #0e7c7b;
+  --color-gold: #c9962c;
+  --color-grey: #5b6472;
+  --color-lightbg: #eef2f6;
+}
 
 :root {
-  --navy: #1b3358;
-  --teal: #0e7c7b;
-  --gold: #c9962c;
-  --grey: #5b6472;
-  --lightbg: #eef2f6;
-
   --sans: 'Segoe UI', system-ui, Roboto, sans-serif;
-
   font: 16px/1.5 var(--sans);
   color: #26303d;
   background: #f7f9fb;
@@ -27,12 +27,10 @@ body {
 }
 
 a {
-  color: var(--teal);
+  color: var(--color-teal);
 }
 
-h1,
-h2,
-h3 {
+h1, h2, h3 {
   font-family: var(--sans);
 }
 

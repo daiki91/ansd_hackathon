@@ -10,6 +10,9 @@ import type {
   HealthEstablishment,
   Indicator,
   Population,
+  Region,
+  Department,
+  DataSource,
   TradeFlow,
   TradeFlowType,
 } from './types'
@@ -58,6 +61,23 @@ export function datasetDownloadUrl(datasetId: string, format: ExportFormat): str
   return `${API_BASE_URL}/api/v1/catalog/${datasetId}/download?format=${format}`
 }
 
+export interface DataFreshness {
+  freshness: Record<string, {
+    source: string
+    url: string
+    fetched_at: string
+    rows: number
+    status: 'live' | 'local_cache' | 'error'
+  }>
+  last_refresh: string | null
+}
+
+export interface RefreshResult {
+  summary: Record<string, { source: string; rows: number; status: string }>
+  freshness: DataFreshness['freshness']
+  timestamp: string
+}
+
 export const api = {
   getCatalog: (domain?: string) => apiGet<Dataset[]>('/api/v1/catalog', { domain }),
   getDataset: (id: string) => apiGet<Dataset>(`/api/v1/catalog/${id}`),
@@ -67,8 +87,18 @@ export const api = {
     apiGet<TradeFlow[]>('/api/v1/trade', filters),
   getPopulation: (filters?: { region?: string; year?: number }) =>
     apiGet<Population[]>('/api/v1/population', filters),
+  getProjections: (filters?: { region?: string; year?: number }) =>
+    apiGet<{ projections: { region: string; year: number; population: number }[]; source: string; base_year: number }>(
+      '/api/v1/population/projections', filters
+    ),
   getIndicators: (filters?: { category?: string; indicator?: string; year?: number }) =>
     apiGet<Indicator[]>('/api/v1/indicators', filters),
+  getRegions: () => apiGet<{ regions: Region[]; count: number }>('/api/v1/geo/regions'),
+  getDepartments: (region?: string) =>
+    apiGet<{ departments: Department[]; count: number }>('/api/v1/geo/departments', { region }),
+  getDataSources: () => apiGet<{ sources: DataSource[]; count: number }>('/api/v1/geo/sources'),
+  refreshData: () => apiGet<RefreshResult>('/api/v1/data/refresh'),
+  getFreshness: () => apiGet<DataFreshness>('/api/v1/data/freshness'),
 }
 
 export { ApiError }

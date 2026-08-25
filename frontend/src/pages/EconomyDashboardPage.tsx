@@ -4,8 +4,9 @@ import { api } from '../api/client'
 import { useApiData } from '../hooks/useApiData'
 import { StateMessage } from '../components/StateMessage'
 import { StatCard } from '../components/StatCard'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { TrendingUp } from 'lucide-react'
 import type { Indicator } from '../api/types'
-import './pages.css'
 
 export function EconomyDashboardPage() {
   const { data: indicators, loading, error } = useApiData(() => api.getIndicators({ category: 'Économie' }), [])
@@ -43,21 +44,23 @@ export function EconomyDashboardPage() {
   const inflation = latestByIndicator.get('Inflation')
 
   return (
-    <div>
-      <div className="page-header">
-        <h1>Tableau de bord — Économie</h1>
-        <p>
-          Indicateurs économiques dynamiques du Sénégal (RF-13), suivis dans le temps pour permettre la
-          comparaison entre périodes (RF-10).
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-[var(--color-navy)] flex items-center gap-2">
+          <TrendingUp className="h-8 w-8 text-[var(--color-teal)]" />
+          Tableau de bord — Économie
+        </h1>
+        <p className="text-[var(--color-grey)] mt-1">
+          Indicateurs économiques dynamiques du Sénégal, suivis dans le temps pour permettre la comparaison entre périodes.
         </p>
       </div>
 
-      {loading ? <StateMessage kind="loading" message="Chargement des indicateurs économiques…" /> : null}
-      {error ? <StateMessage kind="error" message={error} /> : null}
+      {loading && <StateMessage kind="loading" message="Chargement des indicateurs économiques…" />}
+      {error && <StateMessage kind="error" message={error} />}
 
-      {indicators ? (
+      {indicators && (
         <>
-          <div className="stat-row">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StatCard
               label={`Croissance du PIB (${pib?.year ?? '—'})`}
               value={pib ? `${pib.value.toLocaleString('fr-FR')} %` : '—'}
@@ -74,9 +77,11 @@ export function EconomyDashboardPage() {
             />
           </div>
 
-          <section className="section">
-            <h2>Évolution de la croissance du PIB et de l'inflation</h2>
-            <div className="chart-panel">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Évolution de la croissance du PIB et de l'inflation</CardTitle>
+            </CardHeader>
+            <CardContent>
               <ResponsiveContainer width="100%" height={320}>
                 <LineChart data={chartData} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -102,36 +107,40 @@ export function EconomyDashboardPage() {
                   />
                 </LineChart>
               </ResponsiveContainer>
-            </div>
-          </section>
+            </CardContent>
+          </Card>
 
-          <section className="section">
-            <h2>Détail des données</h2>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Indicateur</th>
-                  <th>Valeur</th>
-                  <th>Année</th>
-                  <th>Source</th>
-                </tr>
-              </thead>
-              <tbody>
-                {indicators.map((row) => (
-                  <tr key={row.id}>
-                    <td>{row.indicator}</td>
-                    <td>
-                      {row.value.toLocaleString('fr-FR')} {row.unit}
-                    </td>
-                    <td>{row.year}</td>
-                    <td>{row.source}</td>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Détail des données</CardTitle>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left">
+                    <th className="py-2 px-3 font-semibold text-[var(--color-navy)]">Indicateur</th>
+                    <th className="py-2 px-3 font-semibold text-[var(--color-navy)]">Valeur</th>
+                    <th className="py-2 px-3 font-semibold text-[var(--color-navy)]">Année</th>
+                    <th className="py-2 px-3 font-semibold text-[var(--color-navy)]">Source</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
+                </thead>
+                <tbody>
+                  {indicators.map((row) => (
+                    <tr key={row.id} className="border-b last:border-0 hover:bg-[var(--color-lightbg)]">
+                      <td className="py-2 px-3">{row.indicator}</td>
+                      <td className="py-2 px-3">
+                        {row.value.toLocaleString('fr-FR')} {row.unit}
+                      </td>
+                      <td className="py-2 px-3">{row.year}</td>
+                      <td className="py-2 px-3 text-xs text-[var(--color-grey)]">{row.source}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
         </>
-      ) : null}
+      )}
     </div>
   )
 }

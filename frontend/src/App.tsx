@@ -7,6 +7,7 @@ import { TradeDashboardPage } from './pages/TradeDashboardPage'
 import { PopulationDashboardPage } from './pages/PopulationDashboardPage'
 import { EconomyDashboardPage } from './pages/EconomyDashboardPage'
 import { AssistantPage } from './pages/AssistantPage'
+import MapPage from './pages/MapPage'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<HomePage />} />
         <Route path="catalogue" element={<CatalogPage />} />
+        <Route path="carte" element={<MapPage />} />
         <Route path="tableaux-de-bord/population" element={<PopulationDashboardPage />} />
         <Route path="tableaux-de-bord/economie" element={<EconomyDashboardPage />} />
         <Route path="tableaux-de-bord/sante" element={<HealthDashboardPage />} />

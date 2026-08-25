@@ -56,3 +56,25 @@ export interface Indicator {
 }
 
 export type ExportFormat = 'csv' | 'excel' | 'json'
+
+export interface Region {
+  name: string
+  center: [number, number]
+  code: string
+}
+
+export interface Department {
+  name: string
+  region: string
+  center: [number, number]
+}
+
+export interface DataSource {
+  id: string
+  name: string
+  full_name: string
+  url: string
+  description: string
+  type: string
+  datasets_available: string[]
+}

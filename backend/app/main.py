@@ -56,14 +56,23 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=settings.cors_origins_list,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
+    allow_origins=[
+        "https://datalink-frontend.onrender.com",
+        "http://localhost:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 app.include_router(health_check.router)
 app.include_router(catalog.router, prefix=settings.API_V1_PREFIX)
 app.include_router(health_data.router, prefix=settings.API_V1_PREFIX)

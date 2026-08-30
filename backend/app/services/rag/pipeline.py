@@ -24,16 +24,21 @@ from typing import TYPE_CHECKING
 
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.documents import Document
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from app.core.config import get_settings
 
 if TYPE_CHECKING:
     # Imports resolus uniquement par les outils de typage (mypy/IDE), jamais
     # executes a l'execution -- donc aucun cout memoire au demarrage.
+    # ATTENTION : `langchain_text_splitters` tire transitivement tout le
+    # stack ML (torch, transformers, sentence_transformers, sklearn, scipy,
+    # sympy...) meme s'il n'expose ici qu'un simple splitter de caracteres --
+    # a garder imperativement dans ce bloc TYPE_CHECKING, jamais au niveau
+    # module (mesure empirique : +788 Mo au demarrage sinon).
     from langchain_anthropic import ChatAnthropic
     from langchain_chroma import Chroma
     from langchain_huggingface import HuggingFaceEmbeddings
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 settings = get_settings()
 
@@ -92,6 +97,8 @@ def _get_vectorstore() -> Chroma:
 
 
 def _get_splitter() -> RecursiveCharacterTextSplitter:
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+
     return RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE,
         chunk_overlap=CHUNK_OVERLAP,

@@ -3,20 +3,37 @@
 Architecture:
   PDF/Text → LangChain Loader → Text Splitter → HuggingFace Embeddings
   → ChromaDB Vector Store → LangChain Retrieval Chain → Claude LLM
+
+Note memoire (Render free tier = 512 MiB) : ChatAnthropic, Chroma,
+HuggingFaceEmbeddings et PyPDFLoader tirent transitivement torch/onnxruntime
+(chromadb) et sont donc importes localement, a l'interieur des fonctions qui
+en ont besoin, plutot qu'en haut du fichier. Un simple `import` de ces
+paquets charge deja leurs bibliotheques natives en memoire -- meme sans
+jamais instancier de modele -- et ce module est importe des le demarrage de
+l'app (main.py -> routers/chat.py -> ce fichier), donc un import eager ici
+faisait deja depasser la limite memoire avant meme la premiere requete.
+`from __future__ import annotations` permet de garder les annotations de
+type (ex. `-> Chroma`) sans avoir a importer ces classes au niveau module.
 """
+
+from __future__ import annotations
 
 import tempfile
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from langchain_anthropic import ChatAnthropic
-from langchain_chroma import Chroma
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from app.core.config import get_settings
+
+if TYPE_CHECKING:
+    # Imports resolus uniquement par les outils de typage (mypy/IDE), jamais
+    # executes a l'execution -- donc aucun cout memoire au demarrage.
+    from langchain_anthropic import ChatAnthropic
+    from langchain_chroma import Chroma
+    from langchain_huggingface import HuggingFaceEmbeddings
 
 settings = get_settings()
 
@@ -55,6 +72,8 @@ _vectorstore: Chroma | None = None
 def _get_embeddings() -> HuggingFaceEmbeddings:
     global _embeddings
     if _embeddings is None:
+        from langchain_huggingface import HuggingFaceEmbeddings
+
         _embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
     return _embeddings
 
@@ -62,6 +81,8 @@ def _get_embeddings() -> HuggingFaceEmbeddings:
 def _get_vectorstore() -> Chroma:
     global _vectorstore
     if _vectorstore is None:
+        from langchain_chroma import Chroma
+
         _vectorstore = Chroma(
             collection_name=COLLECTION_NAME,
             embedding_function=_get_embeddings(),
@@ -80,6 +101,8 @@ def _get_splitter() -> RecursiveCharacterTextSplitter:
 
 
 def _get_llm(temperature: float = 0.3) -> ChatAnthropic:
+    from langchain_anthropic import ChatAnthropic
+
     api_key = getattr(settings, "ANTHROPIC_API_KEY", "")
     if not api_key:
         raise ValueError(
@@ -108,6 +131,8 @@ def _add_documents(texts: list[str], metadatas: list[dict]) -> int:
 
 
 def ingest_pdf(file_path: str | Path, source_name: str = "") -> dict:
+    from langchain_community.document_loaders import PyPDFLoader
+
     loader = PyPDFLoader(str(file_path))
     docs = loader.load()
 

@@ -50,6 +50,13 @@ class Settings(BaseSettings):
     # Anthropic Claude API (pour le chatbot RAG)
     ANTHROPIC_API_KEY: str = ""
 
+    # Active/desactive l'assistant IA (RAG). A mettre a False en production sur
+    # une instance a RAM limitee (ex. Render free 512 Mo) : sentence-transformers
+    # charge torch au premier appel, qui consomme a lui seul ~500 Mo de RAM,
+    # ce qui depasse la limite. Laisser True en local pour continuer a
+    # developper/tester l'assistant normalement.
+    ENABLE_RAG_ASSISTANT: bool = True
+
     @property
     def cors_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]

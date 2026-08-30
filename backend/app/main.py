@@ -71,7 +71,14 @@ app.include_router(trade_data.router, prefix=settings.API_V1_PREFIX)
 app.include_router(population_data.router, prefix=settings.API_V1_PREFIX)
 app.include_router(indicators_data.router, prefix=settings.API_V1_PREFIX)
 app.include_router(gdp_data.router, prefix=settings.API_V1_PREFIX)
-app.include_router(chat.router, prefix=settings.API_V1_PREFIX)
+if settings.ENABLE_RAG_ASSISTANT:
+    # Desactive en prod sur Render free (512 Mo) : le premier appel a
+    # sentence-transformers charge torch, qui consomme a lui seul ~500 Mo et
+    # fait planter l'instance (OOM). Voir ENABLE_RAG_ASSISTANT dans
+    # app/core/config.py. En le sautant ici, les routes /api/v1/chat/* et
+    # donc app/services/rag/pipeline.py ne sont jamais atteintes -- aucun
+    # risque de charger torch sur cette instance.
+    app.include_router(chat.router, prefix=settings.API_V1_PREFIX)
 app.include_router(data_router.router, prefix=settings.API_V1_PREFIX)
 app.include_router(agriculture_data.router, prefix=settings.API_V1_PREFIX)
 app.include_router(geography_data.router, prefix=settings.API_V1_PREFIX)

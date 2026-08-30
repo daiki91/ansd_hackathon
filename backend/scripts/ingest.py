@@ -26,8 +26,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.db.base import Base  # noqa: E402
 from app.db.session import SessionLocal, engine  # noqa: E402
+from app.models.agriculture import AgricultureProduction, CerealImports  # noqa: E402
 from app.models.dataset import Dataset  # noqa: E402
 from app.models.gdp import RegionalGdp  # noqa: E402
+from app.models.geography import RegionArea  # noqa: E402
 from app.models.health import HealthEstablishment  # noqa: E402
 from app.models.indicator import Indicator  # noqa: E402
 from app.models.population import Population  # noqa: E402
@@ -50,7 +52,7 @@ DATASETS_CATALOG = [
         period_covered="2017, 2022 (données d'amorçage -- à étendre)",
         geographic_level="National, Région",
         variables="region,facility_type,count,year",
-        compatible_dataset_ids="",
+        compatible_dataset_ids="population,regional-gdp",
         table_name="health_establishments",
     ),
     Dataset(
@@ -66,7 +68,7 @@ DATASETS_CATALOG = [
         period_covered="2023 (données d'amorçage -- à étendre)",
         geographic_level="National, Pays partenaire",
         variables="year,flow_type,country,share_pct,value_fcfa_billions",
-        compatible_dataset_ids="",
+        compatible_dataset_ids="importations-cereales",
         table_name="trade_flows",
     ),
     Dataset(
@@ -83,7 +85,7 @@ DATASETS_CATALOG = [
         period_covered="2023 (données d'amorçage -- à étendre aux 14 régions)",
         geographic_level="National, Région (partiel)",
         variables="region,count,share_pct,year",
-        compatible_dataset_ids="etablissements-sante,commerce-exterieur",
+        compatible_dataset_ids="etablissements-sante,regional-gdp,superficie-regions,indicateurs-nationaux",
         table_name="population",
     ),
     Dataset(
@@ -102,6 +104,72 @@ DATASETS_CATALOG = [
         variables="category,indicator,value,unit,year",
         compatible_dataset_ids="population",
         table_name="indicators",
+    ),
+    Dataset(
+        id="regional-gdp",
+        title="PIB régional du Sénégal",
+        description=(
+            "Produit Intérieur Brut en volume et en valeur par région, et "
+            "structure sectorielle de la valeur ajoutée (primaire/secondaire/"
+            "tertiaire), comptes économiques régionaux 2020-2023."
+        ),
+        domain="Économie",
+        source_name="ANSD (Comptes économiques régionaux)",
+        source_url="https://www.ansd.sn/toutes-les-publications",
+        period_covered="2020-2023",
+        geographic_level="Région",
+        variables="region,year,pib_volume_mds,pib_valeur_mds,part_primaire_pct,part_secondaire_pct,part_tertiaire_pct",
+        compatible_dataset_ids="population,etablissements-sante,superficie-regions",
+        table_name="regional_gdp",
+    ),
+    Dataset(
+        id="superficie-regions",
+        title="Superficie des régions du Sénégal",
+        description=(
+            "Superficie (km²) des 14 régions du Sénégal -- donnée de "
+            "référence statique (pas de série temporelle), utilisée "
+            "notamment pour calculer des densités de population."
+        ),
+        domain="Géographie",
+        source_name="Wikipédia (Régions du Sénégal) -- source externe, non-ANSD directe",
+        source_url="https://fr.wikipedia.org/wiki/R%C3%A9gions_du_S%C3%A9n%C3%A9gal",
+        period_covered="N/A (donnée statique)",
+        geographic_level="Région",
+        variables="region,area_km2",
+        compatible_dataset_ids="population,regional-gdp,etablissements-sante",
+        table_name="region_areas",
+    ),
+    Dataset(
+        id="production-agricole-cereales",
+        title="Production nette de céréales du Sénégal",
+        description=(
+            "Production nette de céréales (mil, sorgho, maïs, riz, fonio), "
+            "série nationale annuelle par campagne agricole."
+        ),
+        domain="Agriculture",
+        source_name="ANSD/DAPSA (BADIS 2018, TABLEAU G.02.01)",
+        source_url="https://www.ansd.sn/toutes-les-publications",
+        period_covered="1969-2023 (campagnes agricoles)",
+        geographic_level="National",
+        variables="year,production_nette_tonnes",
+        compatible_dataset_ids="importations-cereales",
+        table_name="agriculture_production",
+    ),
+    Dataset(
+        id="importations-cereales",
+        title="Importations de céréales du Sénégal",
+        description=(
+            "Importations de céréales (mil-sorgho, maïs, riz, blé), série "
+            "nationale annuelle."
+        ),
+        domain="Agriculture",
+        source_name="ANSD/DAPSA (BADIS 2018, TABLEAU G.02.02)",
+        source_url="https://www.ansd.sn/toutes-les-publications",
+        period_covered="1970-2018",
+        geographic_level="National",
+        variables="year,import_tonnes",
+        compatible_dataset_ids="production-agricole-cereales,commerce-exterieur",
+        table_name="cereal_imports",
     ),
 ]
 
@@ -151,6 +219,30 @@ def ingest_regional_gdp(session) -> int:
     return len(rows)
 
 
+def ingest_region_areas(session) -> int:
+    df = pd.read_csv(DATA_DIR / "superficie_regions.csv", comment="#")
+    session.query(RegionArea).delete()
+    rows = [RegionArea(**record) for record in df.to_dict(orient="records")]
+    session.add_all(rows)
+    return len(rows)
+
+
+def ingest_agriculture_production(session) -> int:
+    df = pd.read_csv(DATA_DIR / "agriculture_production_cereales.csv", comment="#")
+    session.query(AgricultureProduction).delete()
+    rows = [AgricultureProduction(**record) for record in df.to_dict(orient="records")]
+    session.add_all(rows)
+    return len(rows)
+
+
+def ingest_cereal_imports(session) -> int:
+    df = pd.read_csv(DATA_DIR / "agriculture_importations_cereales.csv", comment="#")
+    session.query(CerealImports).delete()
+    rows = [CerealImports(**record) for record in df.to_dict(orient="records")]
+    session.add_all(rows)
+    return len(rows)
+
+
 def ingest_catalog(session) -> int:
     for dataset in DATASETS_CATALOG:
         session.merge(dataset)
@@ -166,11 +258,15 @@ def main() -> None:
         n_population = ingest_population(session)
         n_indicators = ingest_indicators(session)
         n_gdp = ingest_regional_gdp(session)
+        n_areas = ingest_region_areas(session)
+        n_agri_prod = ingest_agriculture_production(session)
+        n_agri_imports = ingest_cereal_imports(session)
         n_catalog = ingest_catalog(session)
         session.commit()
         print(f"Ingestion terminée : {n_health} lignes santé, {n_trade} lignes commerce, "
               f"{n_population} lignes population, {n_indicators} lignes indicateurs, "
-              f"{n_gdp} lignes PIB régional, "
+              f"{n_gdp} lignes PIB régional, {n_areas} lignes superficie, "
+              f"{n_agri_prod} lignes production agricole, {n_agri_imports} lignes importations céréales, "
               f"{n_catalog} jeux de données catalogués.")
     except Exception:
         session.rollback()

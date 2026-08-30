@@ -1,6 +1,7 @@
 import { datasetDownloadUrl, api } from '../api/client'
 import { useApiData } from '../hooks/useApiData'
 import { StateMessage } from '../components/StateMessage'
+import { PageHeader } from '../components/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -18,15 +19,11 @@ export function CatalogPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-[var(--color-navy)] flex items-center gap-2">
-          <Database className="h-8 w-8 text-[var(--color-teal)]" />
-          Catalogue de données
-        </h1>
-        <p className="text-[var(--color-grey)] mt-1">
-          Jeux de données statistiques référencés sur DATA LINK, avec leurs métadonnées et leur téléchargement en Open Data.
-        </p>
-      </div>
+      <PageHeader
+        icon={Database}
+        title="Catalogue de données"
+        subtitle="Jeux de données statistiques référencés sur DATA LINK, avec leurs métadonnées et leur téléchargement en Open Data."
+      />
 
       {loading && <StateMessage kind="loading" message="Chargement du catalogue…" />}
       {error && <StateMessage kind="error" message={error} />}

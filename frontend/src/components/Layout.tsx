@@ -1,14 +1,12 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { LayoutDashboard, Database, Map, Users, TrendingUp, HeartPulse, Globe, Bot } from 'lucide-react'
+import { Home, Database, Map, LayoutDashboard, GitMerge, Bot } from 'lucide-react'
 
 const NAV_LINKS = [
-  { to: '/', label: 'Accueil', icon: LayoutDashboard, end: true },
+  { to: '/', label: 'Accueil', icon: Home, end: true },
   { to: '/catalogue', label: 'Catalogue', icon: Database },
   { to: '/carte', label: 'Carte', icon: Map },
-  { to: '/tableaux-de-bord/population', label: 'Population', icon: Users },
-  { to: '/tableaux-de-bord/economie', label: 'Économie', icon: TrendingUp },
-  { to: '/tableaux-de-bord/sante', label: 'Santé', icon: HeartPulse },
-  { to: '/tableaux-de-bord/commerce', label: 'Commerce', icon: Globe },
+  { to: '/tableaux-de-bord/population', label: 'Tableaux de bord', icon: LayoutDashboard },
+  { to: '/croisement', label: 'Croisement', icon: GitMerge },
   { to: '/assistant', label: 'Assistant IA', icon: Bot },
 ]
 

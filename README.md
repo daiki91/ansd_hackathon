@@ -10,7 +10,8 @@ Le cahier des charges complet du projet est disponible dans [`cahier_des_charges
 
 | Couche | Technologies |
 |---|---|
-| Frontend | React 19, TypeScript, Vite, Recharts, React Router |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS, shadcn/ui, Recharts, React Router |
+| Cartographie | MapLibre GL JS (3D), limites administratives geoBoundaries, réseau transport OpenStreetMap |
 | Backend | Python, FastAPI, SQLAlchemy, Pydantic |
 | Base de données | SQLite (dev) / Supabase PostgreSQL + PostGIS (prod) |
 | IA / RAG | LangChain, Anthropic Claude, ChromaDB, HuggingFace Embeddings |
@@ -48,6 +49,31 @@ ansd_hackathon/
 
 L'application se lance en deux serveurs séparés.
 
+### 0. Installation automatique des données (recommandé)
+
+Un script unique récupère et construit **toutes les données officielles** du projet :
+
+```bash
+cd backend
+python -m scripts.setup_data
+```
+
+Le pipeline (11 étapes, idempotent, ~2 min avec cache / ~10 min depuis zéro) :
+1. Scraping du catalogue des publications ANSD ([ansd.sn](https://www.ansd.sn/toutes-les-publications))
+2. Téléchargement des ~82 fichiers XLSX officiels (~35 Mo, sources primaires)
+3. Construction des CSV structurés avec **validation automatique** (les sommes régionales doivent correspondre aux totaux officiels, sinon le script échoue) :
+   - Population RGPH-5 2023 exacte + projections ANSD 2023-2050 (14 régions + 46 départements)
+   - Établissements de santé par région (DPRS/MSAS, tableau F.04.03)
+   - PIB régional volume/valeur + structure sectorielle (comptes régionaux ANSD 2020-2023)
+   - Commerce extérieur par partenaire (séries DGIT 2010-2026)
+   - Inflation IHPC officielle calculée depuis l'indice base 2023
+4. Réseau de transport OpenStreetMap → GeoJSON pour la carte (routes A1-N11, voies ferrées dont le TER, ports, aéroports)
+5. Ingestion de tous les CSV vers la base SQLite
+
+> Principe « temps réel » : le RGPH-5 (2023) étant le dernier recensement, les projections
+> officielles 2023-2050 font foi jusqu'au prochain recensement. Le bouton
+> « Actualiser » de la carte re-tente les sources distantes puis retombe sur le cache local.
+
 ### 1. Backend (FastAPI)
 
 ```bash
@@ -61,7 +87,8 @@ cp .env.example .env
 # Ajouter votre clé API Anthropic dans .env :
 # ANTHROPIC_API_KEY=sk-ant-xxxxx
 
-python -m scripts.ingest     # charge les données d'amorçage
+python -m scripts.setup_data    # données complètes (ou : python -m scripts.ingest pour l'amorçage minimal)
+python -m scripts.ingest_rag    # ingestion des CSV dans la base vectorielle (chatbot)
 uvicorn app.main:app --reload
 ```
 
@@ -79,9 +106,7 @@ Application sur `http://localhost:5173`.
 
 ### 3. Assistant IA
 
-L'assistant est accessible :
-- En **bulle flottante** (bouton 💬 en bas à droite) sur toutes les pages
-- En **page dédiée** sur `/assistant`
+L'assistant est accessible en **page dédiée** sur `/assistant`.
 
 Pour enrichir la base de connaissances, uploadez des PDFs directement depuis le chat ou via l'API :
 
@@ -106,10 +131,17 @@ curl -X POST http://localhost:8000/api/v1/chat/ingest \
 | `GET` | `/api/v1/catalog` | Liste des jeux de données |
 | `GET` | `/api/v1/catalog/{id}` | Détail d'un jeu de données |
 | `GET` | `/api/v1/catalog/{id}/download` | Téléchargement CSV/Excel/JSON |
-| `GET` | `/api/v1/population` | Données population par région |
-| `GET` | `/api/v1/indicators` | Indicateurs économiques/démographiques |
-| `GET` | `/api/v1/health-establishments` | Établissements de santé |
-| `GET` | `GET /api/v1/trade` | Flux commerciaux imports/exports |
+| `GET` | `/api/v1/population` | Population par région (RGPH-5 2023) |
+| `GET` | `/api/v1/population/projections` | Projections ANSD 2023-2050 (`level=regions\|departements`) |
+| `GET` | `/api/v1/regional-gdp` | PIB régional + structure sectorielle (2020-2023) |
+| `GET` | `/api/v1/indicators` | Indicateurs économiques/démographiques (inflation IHPC) |
+| `GET` | `/api/v1/health-establishments` | Établissements de santé par région |
+| `GET` | `/api/v1/trade` | Flux commerciaux imports/exports par pays (2010-2025) |
+| `GET` | `/api/v1/geo/regions` | 14 régions (centres, population) |
+| `GET` | `/api/v1/geo/departments` | 45 départements (centres) |
+| `GET` | `/api/v1/geo/sources` | Portails de données officiels |
+| `GET` | `/api/v1/data/refresh` | Re-fetch des sources officielles (fallback cache local) |
+| `GET` | `/api/v1/data/freshness` | Fraîcheur des données par domaine (live / local_cache) |
 
 ### Assistant IA (RAG)
 
@@ -142,29 +174,31 @@ Réponse contextuelle et sourcée
 ## État d'avancement
 
 ### Backend
-- [x] API FastAPI avec endpoints données (catalogue, santé, commerce, population, indicateurs)
+- [x] API FastAPI avec endpoints données (catalogue, santé, commerce, population, indicateurs, PIB régional)
+- [x] Pipeline d'installation automatique des données officielles (`python -m scripts.setup_data`)
+- [x] Projections démographiques ANSD 2023-2050 (régions + départements)
 - [x] Assistant IA avec RAG (LangChain + Claude + ChromaDB)
 - [x] Upload PDF avec ingestion automatique
 - [x] Streaming des réponses en temps réel
 - [x] Export CSV/Excel/JSON
-- [ ] Moteur de croisement de données (RF-18 à RF-21)
+- [ ] Moteur de croisement serveur (RF-18 à RF-21 — croisement client déjà opérationnel sur la carte)
 - [ ] Authentification par rôle (RF-01, RNF-01)
-- [ ] Cartographie interactive (RF-03)
 - [ ] Interopérabilité SDMX (RF-16)
 
 ### Frontend
 - [x] Navigation multi-pages (Accueil, Catalogue, 4 Dashboards)
+- [x] Carte 3D interactive MapLibre (limites réelles geoBoundaries, régions + départements)
+- [x] Couches statistiques : Population / Santé / PIB / Indicateurs + sélecteur d'année 2023-2050
+- [x] Réseau de transport superposable : routes (A1-N11), rails (TER), ports, aéroports
+- [x] Comparaison croisée multi-indicateurs (jusqu'à 4 zones × 4 domaines)
 - [x] Graphiques interactifs (Recharts)
-- [x] ChatBot avec streaming, upload PDF, suggestions
-- [x] Page dédiée Assistant IA (`/assistant`)
-- [ ] Cartographie interactive (Leaflet/MapLibre)
-- [ ] Comparaison régionale/temporelle
 - [ ] Export PDF des rapports
 
 ### Données
-- [x] 4 jeux de données référencés (santé, commerce, population, indicateurs)
-- [x] Données réelles et sourcées (ANSD, MSAS, DG Trésor)
-- [ ] Extension des sources (Open Data Sénégal, ANADS, Stats Sénégal)
+- [x] Sources 100 % officielles et sourcées : ANSD (RGPH-5, projections, comptes régionaux, commerce DGIT, IHPC), MSAS/DPRS
+- [x] Validation automatique de cohérence dans les scripts d'extraction
+- [x] Catalogue de 82 publications XLSX ANSD téléchargeables (`data/raw/ansd_publications.json`)
+- [ ] Extension des sources (Open Data Sénégal CKAN — tenté en direct, portails Knoema bloqués en API)
 
 ## Équipe
 

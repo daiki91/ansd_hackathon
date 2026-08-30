@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: datalink-api
+    runtime: python
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
+      - key: ENVIRONMENT
+        value: production
+      # Connexion Supabase (Transaction Pooler) -- voir backend/app/core/config.py.
+      # Renseigner ces valeurs dans le dashboard Render (Environment), pas ici.
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "6543"
+      - key: DB_NAME
+        value: postgres
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      # Origines autorisees pour le CORS -- mettre a jour avec l'URL du
+      # frontend deploye (ex: https://datalink.vercel.app), en plus de
+      # localhost:5173 si besoin de tester en local contre l'API deployee.
+      - key: CORS_ORIGINS
+        sync: false
+      # Cle API Anthropic pour l'assistant IA (RAG).
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: API_KEYS
+        sync: false
+      - key: REQUIRE_API_KEY
+        value: "false"

@@ -9,9 +9,10 @@ settings = get_settings()
 
 # `connect_args` n'est nécessaire que pour SQLite (autorise l'usage multi-thread
 # avec le serveur de dev Uvicorn). Il est ignoré pour PostgreSQL/Supabase.
-connect_args = {"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
+db_url = settings.sqlalchemy_database_url
+connect_args = {"check_same_thread": False} if db_url.startswith("sqlite") else {}
 
-engine = create_engine(settings.DATABASE_URL, connect_args=connect_args, future=True)
+engine = create_engine(db_url, connect_args=connect_args, future=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, future=True)
 
 

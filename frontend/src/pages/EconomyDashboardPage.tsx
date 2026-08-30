@@ -29,7 +29,7 @@ export function EconomyDashboardPage() {
     () =>
       years.map((year) => {
         const pib = (indicators ?? []).find((row) => row.indicator === 'Croissance du PIB' && row.year === year)
-        const inflation = (indicators ?? []).find((row) => row.indicator === 'Inflation' && row.year === year)
+        const inflation = (indicators ?? []).find((row) => row.indicator === 'Inflation (IHPC)' && row.year === year)
         return {
           year: String(year),
           'Croissance du PIB (%)': pib?.value ?? null,
@@ -41,7 +41,7 @@ export function EconomyDashboardPage() {
 
   const dette = latestByIndicator.get('Dette publique')
   const pib = latestByIndicator.get('Croissance du PIB')
-  const inflation = latestByIndicator.get('Inflation')
+  const inflation = latestByIndicator.get('Inflation (IHPC)')
 
   return (
     <div className="space-y-6">

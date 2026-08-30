@@ -108,6 +108,7 @@ DATASETS_CATALOG = [
 
 def ingest_health_establishments(session) -> int:
     df = pd.read_csv(DATA_DIR / "etablissements_sante.csv", comment="#")
+    df = df.astype(object).where(df.notna(), None)
     session.query(HealthEstablishment).delete()
     rows = [HealthEstablishment(**record) for record in df.to_dict(orient="records")]
     session.add_all(rows)
@@ -116,7 +117,7 @@ def ingest_health_establishments(session) -> int:
 
 def ingest_trade_flows(session) -> int:
     df = pd.read_csv(DATA_DIR / "commerce_exterieur.csv", comment="#")
-    df = df.where(pd.notnull(df), None)
+    df = df.astype(object).where(df.notna(), None)
     session.query(TradeFlow).delete()
     rows = [TradeFlow(**record) for record in df.to_dict(orient="records")]
     session.add_all(rows)
@@ -125,7 +126,7 @@ def ingest_trade_flows(session) -> int:
 
 def ingest_population(session) -> int:
     df = pd.read_csv(DATA_DIR / "population.csv", comment="#")
-    df = df.where(pd.notnull(df), None)
+    df = df.astype(object).where(df.notna(), None)
     session.query(Population).delete()
     rows = [Population(**record) for record in df.to_dict(orient="records")]
     session.add_all(rows)
@@ -134,6 +135,7 @@ def ingest_population(session) -> int:
 
 def ingest_indicators(session) -> int:
     df = pd.read_csv(DATA_DIR / "indicateurs_nationaux.csv", comment="#")
+    df = df.astype(object).where(df.notna(), None)
     session.query(Indicator).delete()
     rows = [Indicator(**record) for record in df.to_dict(orient="records")]
     session.add_all(rows)
@@ -142,7 +144,7 @@ def ingest_indicators(session) -> int:
 
 def ingest_regional_gdp(session) -> int:
     df = pd.read_csv(DATA_DIR / "regional_gdp.csv", comment="#")
-    df = df.where(pd.notnull(df), None)
+    df = df.astype(object).where(df.notna(), None)
     session.query(RegionalGdp).delete()
     rows = [RegionalGdp(**record) for record in df.to_dict(orient="records")]
     session.add_all(rows)

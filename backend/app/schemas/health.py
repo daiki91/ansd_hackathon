@@ -1,4 +1,6 @@
-from pydantic import BaseModel, ConfigDict
+import math
+
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class HealthEstablishmentOut(BaseModel):
@@ -7,6 +9,13 @@ class HealthEstablishmentOut(BaseModel):
     id: int
     region: str
     facility_type: str
-    count: float
+    count: float | None
     year: int
     source: str
+
+    @field_validator("count", mode="before")
+    @classmethod
+    def _nan_to_none(cls, v):
+        if isinstance(v, float) and math.isnan(v):
+            return None
+        return v

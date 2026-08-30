@@ -18,8 +18,8 @@ export function TradeDashboardPage() {
   const [flowType, setFlowType] = useState<TradeFlowType>('export')
 
   const flowRows = useMemo(() => (rows ?? []).filter((row) => row.flow_type === flowType), [rows, flowType])
-  const total = flowRows.find((row) => row.country === 'Total')
-  const countryRows = flowRows.filter((row) => row.country !== 'Total')
+  const total = flowRows.find((row) => row.country === 'Total Sénégal')
+  const countryRows = flowRows.filter((row) => row.country !== 'Total Sénégal')
 
   const chartData = useMemo(
     () =>
